@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+//     let start = new Date().getTime()
+//     let end1;
+//     for (let i = 0; i < 99999999; i++){
+
+//     };
+//     end1 = new Date().getTime()
+//     console.log((end1 - start) / 1000, 'in end1111111 ---')
+// let end;
+// let start1 = new Date().getTime()
+function fn () {
+  // end = new Date().getTime()
+  console.log('in end edn  ---')
+}
+// setTimeout(fn,6000);
+// setTimeout(fn,7000);
+// setTimeout(fn,8000);
+  function delayTimer(fn, delayTime,times){
+    let counter = 0;
+   function _recurionTimer (){
+    if(counter >= times) return;
+    counter++;
+    let timer = setTimeout(() => {
+       fn()
+       _recurionTimer()
+     }, delayTime);
+   }
+   _recurionTimer()
+  }
+  delayTimer(fn,1000,5)
+  </script>
+  <script src="'./index.js'" ></script>
+</body>
+</html>
