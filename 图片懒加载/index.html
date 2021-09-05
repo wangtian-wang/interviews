@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .box img {
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        /* 利用transition 让图片在没有出现在可视区域时候 不显示 提升性能 减小回流 重绘 */
+        transition: opacity 0.5s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <img src="" alt="" data-img="./图片懒加载模型图.png" />
+    </div>
+    <script>
+      (function () {
+        let box = document.querySelector(".box"),
+          img = document.querySelector(".img"),
+          html = document.documentElement;
+        const lazyLoading = () => {
+          if (img.isLoad) return;
+          let { top, bottom } = box.getBoundingClientRect();
+          if (bottom <= html.clientHeight && top >= 0) {
+            img.src = img.getAttribute("data-img");
+            img.isLoad = true;
+            img.onload = () => {
+              img.style.opacity = 1;
+            };
+          }
+        };
+        lazyLoading();
+        window.addEventListener("scroll", lazyLoading); // scroll 每隔5ms执行一次
+      })();
+      (function () {
+        let box = document.querySelector(".box"),
+          img = document.querySelector(".img");
+        let observer = new IntersectionObserver(
+          (dom) => {
+            dom[0]; // 监听的第一个元素和可视窗口的交叉信息
+            let { isIntersecting, target } = dom[0];
+            if (target === "div.box") {
+              if (isIntersecting) {
+                img.src = img.getAttribute("data-img");
+                img.onload = () => {
+                  img.style.opacity = 1;
+                };
+                observer.unobserve(target);
+              }
+            }
+          },
+          {
+            threshold: [1], //  DOM元素啥时候出现的控制项 [0, 0.5, 1]
+          }
+        );
+      })();
+      // 3: img.loading = lazy 未来会出现的技术方案
+    </script>
+  </body>
+</html>
