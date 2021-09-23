@@ -21,11 +21,11 @@
 
 ## 本质原因 ：
 
-`cookie被非法客户端盗取`
+`cookie被非法客户端使用`
 
 ## 解决办法
 
-1. 同源检测 request header origin refer refer-policy
+1. 同源检测 request header origin refer refer-policy 但是 https 不发送 refer
 
 2. cookie samesite
 3. csrf token 将登录凭证 token，加到能够发送请求的 html 元素上面 js 请求，携带 token ；服务端校验 token 的有效性
@@ -39,4 +39,4 @@
 
 `4: 开启浏览器的XSS防御: cookie http only`
 
-`5: 验证码`
+`5: 人机图形验证码 + 短信`
