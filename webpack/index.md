@@ -209,8 +209,8 @@ sourcemap 的隐射原理: 面试会问
 ```
 mode: 'production',
 devtool: "cheap-inline-source-map" 隐射关系,精确到行和列提示错误 可以知道在开发的过程中哪里的源代码出了问题,不包含第三方库的代码错误, cheap-module-inline-source-map --> 检查错误包含第三方库
-cheap-module-eval-source-map --> 效率高,开发常用
-cheap-module-cheap-module-source-map --> 在生产环境中可可以检测出代码哪里有问题
+eval-cheap-module-source-map --> 效率高,开发常用
+
 ```
 
 一些 json 文件 scripts 命令
