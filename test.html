@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .father {
+        color: black !important;
+        background-color: pink;
+        height: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="father" style="color: yellowgreen">
+      father
+      <div
+        class="children"
+        style="background-color: powderblue; margin-top: 50px"
+      >
+        children
+      </div>
+    </div>
+    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
+    <script src="./test.js"></script>
+    <script type="template">
+      function baseIsEqual(value, other, bitmask, customizer, stack) {
+        if (value === other) {
+          return true;
+        }
+        if (
+          value == null ||
+          other == null ||
+          (!isObjectLike(value) && !isObjectLike(other))
+        ) {
+          return value !== value && other !== other;
+        }
+        return baseIsEqualDeep(
+          value,
+          other,
+          bitmask,
+          customizer,
+          baseIsEqual,
+          stack
+        );
+      }
+      // equalFunc 指的是 baseIsEqual 本身
+      function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
+        var objIsArr = isArray(object),
+            othIsArr = isArray(other),
+            objTag = objIsArr ? arrayTag : getTag(object),
+            othTag = othIsArr ? arrayTag : getTag(other);
+
+        objTag = objTag == argsTag ? objectTag : objTag;
+        othTag = othTag == argsTag ? objectTag : othTag;
+
+        var objIsObj = objTag == objectTag,
+            othIsObj = othTag == objectTag,
+            isSameTag = objTag == othTag;
+
+        if (isSameTag && isBuffer(object)) {
+          if (!isBuffer(other)) {
+            return false;
+          }
+          objIsArr = true;
+          objIsObj = false;
+        }
+        if (isSameTag && !objIsObj) {
+          stack || (stack = new Stack);
+          return (objIsArr || isTypedArray(object))
+            ? equalArrays(object, other, bitmask, customizer, equalFunc, stack)
+            : equalByTag(object, other, objTag, bitmask, customizer, equalFunc, stack);
+        }
+        if (!(bitmask & COMPARE_PARTIAL_FLAG)) {
+          var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+              othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+
+          if (objIsWrapped || othIsWrapped) {
+            var objUnwrapped = objIsWrapped ? object.value() : object,
+                othUnwrapped = othIsWrapped ? other.value() : other;
+
+            stack || (stack = new Stack);
+            return equalFunc(objUnwrapped, othUnwrapped, bitmask, customizer, stack);
+          }
+        }
+        if (!isSameTag) {
+          return false;
+        }
+        stack || (stack = new Stack);
+        return equalObjects(object, other, bitmask, customizer, equalFunc, stack);
+      }
+
+      function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
+        var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
+            objProps = getAllKeys(object),
+            objLength = objProps.length,
+            othProps = getAllKeys(other),
+            othLength = othProps.length;
+
+        if (objLength != othLength && !isPartial) {
+          return false;
+        }
+        var index = objLength;
+        while (index--) {
+          var key = objProps[index];
+          if (!(isPartial ? key in other : hasOwnProperty.call(other, key))) {
+            return false;
+          }
+        }
+        // Check that cyclic values are equal.
+        var objStacked = stack.get(object);
+        var othStacked = stack.get(other);
+        if (objStacked && othStacked) {
+          return objStacked == other && othStacked == object;
+        }
+        var result = true;
+        stack.set(object, other);
+        stack.set(other, object);
+
+        var skipCtor = isPartial;
+        while (++index < objLength) {
+          key = objProps[index];
+          var objValue = object[key],
+              othValue = other[key];
+
+          if (customizer) {
+            var compared = isPartial
+              ? customizer(othValue, objValue, key, other, object, stack)
+              : customizer(objValue, othValue, key, object, other, stack);
+          }
+          // Recursively compare objects (susceptible to call stack limits).
+          if (!(compared === undefined
+                ? (objValue === othValue || equalFunc(objValue, othValue, bitmask, customizer, stack))
+                : compared
+              )) {
+            result = false;
+            break;
+          }
+          skipCtor || (skipCtor = key == 'constructor');
+        }
+        if (result && !skipCtor) {
+          var objCtor = object.constructor,
+              othCtor = other.constructor;
+
+          // Non `Object` object instances with different constructors are not equal.
+          if (objCtor != othCtor &&
+              ('constructor' in object && 'constructor' in other) &&
+              !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
+                typeof othCtor == 'function' && othCtor instanceof othCtor)) {
+            result = false;
+          }
+        }
+        stack['delete'](object);
+        stack['delete'](other);
+        return result;
+      }
+    </script>
+  </body>
+</html>
