@@ -1,16 +1,16 @@
 {
-  "name": "server",
+  "name": "my-axios",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "使用说明",
+  "main": "cancelRepeat.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-   
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.24.0",
     "koa": "^2.13.1",
     "koa-router": "^10.0.0"
   }

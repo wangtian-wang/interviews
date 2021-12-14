@@ -119,4 +119,26 @@ class Arrange {
     console.log(`${this.name}结束了今天的工作`);
   };
 }
-arrange("Bob").execute("写代码").sleep(5000).execute("写代码").start();
+// arrange("Bob").execute("写代码").sleep(5000).execute("写代码").start();
+function formatTree(array) {
+  if (!Array.isArray(array)) {
+    return "arguments must be an array";
+  }
+  const parent = array.filter((item) => item.parentId === undefined);
+  const children = array.filter((item) => item.parentId !== undefined);
+  function recuseFormat(parent, child) {
+    parent.forEach((p) => {
+      child.forEach((c, i) => {
+        if (p.id === c.parentId) {
+          let _children = JSON.parse(JSON.stringify(children));
+          _children.splice(i, 1);
+          recuseFormat([c], _children); //  当前的c 可能还有孩子
+          p.children ? p.children.push(c) : (p.children = [c]);
+        }
+      });
+    });
+  }
+  recuseFormat(parent, children);
+  return parent;
+}
+console.log(formatTree(menuOriginal));
