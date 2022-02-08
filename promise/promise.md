@@ -1,4 +1,5 @@
-## 关于promise中的返回值
+## 关于 promise 中的返回值
+
 ```js
 let p = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -29,7 +30,7 @@ setTimeout(() => {
     console.log(p, p2, p3); // 只能在延时器里面拿到p, p1的返回结果
     /*
     p的状态在延时器执行后改变， 状态为 fullfilled   result : ok;
-    p2  state： fullfilled   result 
+    p2  state： fullfilled   result
                                     1： 当 p 的返回值为任意值（0， false， null， undefined）的时候，       p2状态为成功的
                                     2： 当 p 的返回值为失败的  throw '1111'                                           p2的状态是失败
                                     3:  当 p 的 返回值为promise实例的时候，p2由实例的状态决定
@@ -38,11 +39,10 @@ setTimeout(() => {
 
 ```
 
-
-
 ## 异常传透
-* 当使用promise的then链式调用时候，可以在最后指定失败的回调
-* 前面的任何操作除了错误 都会传递到最后失败的回调中处理
+
+- 当使用 promise 的 then 链式调用时候，可以在最后指定失败的回调
+- 前面的任何操作除了错误 都会传递到最后失败的回调中处理
 
 ```js
 当promise中的状态为失败的时候，可以用以下两种方法将失败的状态传递给后面的promise处理
@@ -50,10 +50,10 @@ setTimeout(() => {
 new Promise((res, rej) => {
    rej('fail')
 }).then(res => {
-    
+
 }, rej => {
    throw rej // 方法1  将错误的状态传递给下一个.then里面的promise的reject
-    
+
 }).then(res => {
 
 }, rej => Promise.reject()) // 方法1   将错误的状态传递给下一个.then里面的promise的reject
@@ -82,11 +82,7 @@ new Promise((res, rej) => {
 })
 ```
 
-
-
-
-
-## 失败的promise.reject()
+## 失败的 promise.reject()
 
 ```js
 .then() (b) 前面的失败的promise a 的reject()的状态，只会影响当前.then (b) 执行成功或者是失败的回调函数，不能影响一下个.then() (c) 的执行结果
@@ -101,19 +97,18 @@ new Promise((res, rej) => {
           return rej
     c  }).then(res => {
           console.log(res, 'second then value') //fail second then value
-       }, rej => rej) 
+       }, rej => rej)
 ```
 
 ```javascript
-async function execTwoMinutes(){
-    await new Promise(function(cb){
-        setTimeOut(() => cb(),
-            2000)
-        })
+async function execTwoMinutes() {
+  await new Promise(function (cb) {
+    setTimeOut(() => cb(), 2000);
+  });
 }
 ```
 
-想要在ajax中使用async await 必须封装一个返回promise实例的函数
+想要在 ajax 中使用 async await 必须封装一个返回 promise 实例的函数
 
 ```js
 function getDataFn(url) {
@@ -129,7 +124,8 @@ asycn getData() {
 以同步的方式获取得到数据之后的返回值
 ```
 
-### then的链式调用
+### then 的链式调用
+
 ```js
 new Promise((res, rej) => {
     promise的状态只能是 三种 状态中的一种 成功 | 失败 | pending
@@ -152,7 +148,157 @@ new Promise((res, rej) => {
         },
         rej => {
             console.log(rej, 'rej2')
-        }) 
+        })
 ```
-#### 关于await的返回值的问题
-* 当await的右边是其他的值，直接将此值作为await的返回值
+
+#### 关于 await 的返回值的问题
+
+- 当 await 的右边是其他的值，直接将此值作为 await 的返回值
+
+## promise 并发执行 3 个任务，假设 P 第一个完成，那就遍历剩下的 promise，从中找到一个 p，将这个 p 加入到已完成的 p 的位置，循环，总是在最先完成的 promise 的位置添加新的待执行的 promise
+
+```javascript
+const taskArray = [
+  {
+    info: "task1",
+    time: 3000,
+  },
+  {
+    info: "task2",
+    time: 1000,
+  },
+  {
+    info: "task3",
+    time: 2050,
+  },
+  {
+    info: "task4",
+    time: 1000,
+  },
+  {
+    info: "task5",
+    time: 3000,
+  },
+  {
+    info: "task6",
+    time: 2000,
+  },
+  {
+    info: "task7",
+    time: 3000,
+  },
+  {
+    info: "task8",
+    time: 4000,
+  },
+  {
+    info: "task9",
+    time: 2000,
+  },
+];
+function handlerPromise(Item) {
+  console.log(Item.info + "start");
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      console.log(Item.info + "success");
+      resolve();
+    }, Item.time);
+  });
+}
+function limitPromise(taskArray, handler, limitNum) {
+  let taskArrays = [].concat(taskArray),
+    promises = taskArrays.splice(0, limitNum);
+  promises = promises.map((item, index) => {
+    return handler(item).then(() => {
+      return index;
+    });
+  });
+  let firstDone = Promise.race(promises);
+  for (let i = 0; i < taskArrays.length; i++) {
+    firstDone = firstDone.then((index) => {
+      // 拿到最先完成的promise ，在promises（3个并发任务）中的索引，给剩余promise数组的item重新赋值
+      // index 的取值范围是0 到 1 只要当前位置的任务完成，就会给当前的任务重新赋值
+      // 通过链式调用 来将剩下的Ppromise一个个推入队列
+      promises[index] = handler(taskArrays[i]).then(() => {
+        return index;
+      });
+      return Promise.race(promises);
+    });
+  }
+}
+limitPromise(taskArray, handlerPromise, 3);
+```
+
+## promise 并发执行 3 个任务，假设 P 第一个完成，那就遍历剩下的 promise，从中找到一个 p，将这个 p 加入到已完成的 p 的位置，循环，总是在最先完成的 promise 的位置添加新的待执行的 promise
+
+```js
+const taskArray = [
+  {
+    info: "task1",
+    time: 3000,
+  },
+  {
+    info: "task2",
+    time: 1000,
+  },
+  {
+    info: "task3",
+    time: 2050,
+  },
+  {
+    info: "task4",
+    time: 1000,
+  },
+  {
+    info: "task5",
+    time: 3000,
+  },
+  {
+    info: "task6",
+    time: 2000,
+  },
+  {
+    info: "task7",
+    time: 3000,
+  },
+  {
+    info: "task8",
+    time: 4000,
+  },
+  {
+    info: "task9",
+    time: 2000,
+  },
+];
+function handlerPromise(Item) {
+  console.log(Item.info + "start");
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      console.log(Item.info + "success");
+      resolve();
+    }, Item.time);
+  });
+}
+function limitPromise(taskArray, handler, limitNum) {
+  let taskArrays = [].concat(taskArray),
+    promises = taskArrays.splice(0, limitNum);
+  promises = promises.map((item, index) => {
+    return handler(item).then(() => {
+      return index;
+    });
+  });
+  let firstDone = Promise.race(promises);
+  for (let i = 0; i < taskArrays.length; i++) {
+    firstDone = firstDone.then((index) => {
+      // 拿到最先完成的promise ，在promises（3个并发任务）中的索引，给剩余promise数组的item重新赋值
+      // index 的取值范围是0 到 1 只要当前位置的任务完成，就会给当前的任务重新赋值
+      // 通过链式调用 来将剩下的Ppromise一个个推入队列
+      promises[index] = handler(taskArrays[i]).then(() => {
+        return index;
+      });
+      return Promise.race(promises);
+    });
+  }
+}
+limitPromise(taskArray, handlerPromise, 3);
+```

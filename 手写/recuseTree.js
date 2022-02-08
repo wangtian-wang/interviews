@@ -1,5 +1,3 @@
-const { Console } = require("console");
-
 const menuOriginal = [
   { id: 1, name: "商品管理" },
   { id: 2, name: "批量管理", parentId: 1 },
