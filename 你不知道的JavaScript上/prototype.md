@@ -81,6 +81,8 @@ console.log(foo.constructor === Foo);
 
 #### 构造函数继承
 
+- 子类的 constructor 容易丢失,改为 Object.defineProperties 定义 constructor
+
 ```javascript
 javascript;
 function Foo(name) {
@@ -93,12 +95,110 @@ function Bar(name, label) {
   Foo.call(this, name);
   this.label = label;
 }
-Bar.prototype = Object.create(Foo.prototype); //  构造函数重新设置prototype的安全方法
+Bar.prototype = Object.create(Foo.prototype); //  构造函数重新设置prototype的安全方法 实例化必须发生在该方法之后 实例才能继承FOO的方法；
+// Bar.prototype.constructor = Bar    // 将BAR的构造函数重新设置回Bar 但是这种方式定义的constructor 可以被枚举出来 不能采用这种方式
+Object.defineProperties(Bar.prototype, "constructor", {
+  value: Bar,
+  enumable: false,
+});
 Object.setPrototypeOf(Bar.prototype, Foo.prototype);
 Bar.prototype.myLabel = function () {
   return this.label;
 };
 const bar = new Bar("bar", "bar bar");
+```
+
+#### 构造函数.prototype**proto**
+
+```javascript
+function Person(name, sex) {
+  this.name = name;
+  this.sex = sex;
+}
+Person.prototype.sayHi = function sayHi() {
+  console.log("hi~~");
+};
+function XiaoMing() {}
+const xiaoming = new XiaoMing();
+XiaoMing.prototype.__proto__ = Person.prototype; //改造函数的__proto__ 优点 :该构造函数可以保存自己的prototype; 实例即使在该修改方法之前 也能继承Person的方法；
+XiaoMing.prototype.sayHello = function () {
+  console.log("say hello ~~");
+};
+xiaoming.sayHi();
+xiaoming.sayHello();
+```
+
+#### 优点：
+
+- 该构造函数可以保存自己的 prototype;
+- 实例化即使在该修改方法之前 也能继承 Person 的方法；
+
+#### 原型工厂继承
+
+```javascript
+function extend(sub, sup) {
+  sub.prototype = Object.create(sup.prototype);
+  Object.defineProperty(sub.prototype, "constructor", {
+    value: sub,
+    enumable: false,
+  });
+}
+
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+Person.prototype.eat = function eat() {
+  console.log("eatting" + this.name);
+};
+function ZhangSan(name, age) {
+  Person.apply(this, [name, age]);
+}
+extend(ZhangSan, Person);
+const zhangsan = new ZhangSan("zhangsan", "12");
+zhangsan.eat();
+```
+
+#### 对象工厂继承
+
+```javascript
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+Person.prototype.eat = function eat() {
+  console.log("eatting" + this.name);
+};
+function zhangsan(name, age) {
+  const instance = Object.create(Person.prototype);
+  Person.apply(instance, [name, age]);
+  return instance;
+}
+const zs = zhangsan("zhangsan", 13);
+zs.eat();
+```
+
+#### mixin 多继承
+
+```javascript
+const dancing = {
+  dance() {
+    console.log(this.name + "dancing");
+  },
+};
+const singing = {
+  sing() {
+    console.log(this.name + "singing");
+  },
+};
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+Person.prototype = Object.assign(Person.prototype, singing, dancing);
+const zs = new Person("zhangsan", 13);
+zs.sing();
+zs.dance();
 ```
 
 #### instanceof
@@ -119,7 +219,7 @@ B.i**_sPrototypeof_**(A) B 对象是否出现在 C 对象的[[prototype]]
 
 - object.create()会创建一个新对象，并且把它关联到我们指定的对象 \*\*并且避免了使用 new 构造函数会生成.prototype .constructor 的引用
 - Object.create(null)创建的对象没有 prototype， 无法通过 instanceof 判断， 适合来存储数据
-- object.create(object,{b: {enumerable:true}})
+- object.create(object,{b: {enumerable:true}}) 修改对象的属性描述符
 
   polyfill()的实现
 
@@ -128,6 +228,7 @@ B.i**_sPrototypeof_**(A) B 对象是否出现在 C 对象的[[prototype]]
      Object.create = function(o){
        function Fn = {};
        Fn.prototype = o
+       Object.definedProperty(Fn.prototype, 'constructor', {value: Fn,enumable: false}) // 解决修改完原型对象后 constructor丢失的问题
        return new Fn()
      }
   }
@@ -206,5 +307,4 @@ obj.printLable = function(){
   ```
 
 - chrome 控制台打印一个实例化的对象 返回的是 new 后面的函数
-
 -
