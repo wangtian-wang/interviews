@@ -5,7 +5,7 @@ Function.prototype._bind = function (obj) {
     );
   }
   var args = Array.prototype.slice.call(arguments, 1);
-  var fn = this;
+  var fn = this; // 指的是传入进来的原函数
   //创建中介函数
   var fn_ = function () {};
   var bound = function () {
