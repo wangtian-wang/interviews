@@ -66,17 +66,3 @@ console.log(22222);
 
 console.log(Function.__proto__ === Function.prototype);
 console.log(Object.__proto__ === Function.prototype);
-
-/**  广电信通
-js基础  
-    
-vue  
-    
-webpack
-   
-
-**/
-
-/**
- 实现类
- */
