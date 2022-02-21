@@ -8,20 +8,25 @@ webpack
 
 **/
 
-// 实现一个函数 封装promise 5S后返回失败的promise结果
+// 实现一个函数 5S后返回失败的promise结果
 const request = () => {
   const axios = $axios;
 
   return new Promise((resolve, reject) => {
-    axios.get("ppp").then((res) => {
-      resolve(res);
-    });
-
-    setTimeout(() => {
-      reject();
-    }, 1000);
+    axios.get("ppp").then(
+      (res) => {
+        resolve(res);
+      },
+      (error) => {
+        setTimeout(() => {
+          reject(error);
+        }, 1000);
+      }
+    );
   });
 };
+
+// 打印输出题目
 var a = 1;
 function fn1() {
   console.log(a);
@@ -61,3 +66,17 @@ console.log(22222);
 
 console.log(Function.__proto__ === Function.prototype);
 console.log(Object.__proto__ === Function.prototype);
+
+/**  广电信通
+js基础  
+    
+vue  
+    
+webpack
+   
+
+**/
+
+/**
+ 实现类
+ */
