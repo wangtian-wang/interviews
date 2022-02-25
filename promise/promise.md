@@ -303,33 +303,75 @@ function limitPromise(taskArray, handler, limitNum) {
 limitPromise(taskArray, handlerPromise, 3);
 ```
 
-## promise.resolve()
+## promise 微任务嵌套微任务
 
 - resolve 方法会将实参包装为一个 promise 对象
-- 面试题
-
-  ```javascript
-    Promise.resolve()
-          .then(function then1() {
-            //  then1    step1  最先执行
-            Promise.resolve()
-              // then2  step 2执行
-              .then(function then2() {
-                console.log(1);
-              })
-              // then3被加入微任务队列  step4
-              .then(function then3() {
-                console.log(2);
-              });
-          })
-          .then(function then4() {
-            // then4执行  step3
-            console.log(3);
-          });
-       1: 对于promise的单实例的链式调用.then()的执行顺序问题
-         链式调用的话，上一个.then()的回调影响一个.then（）de 状态， 只有当上一个.then()回调里面的代码执行完成后，代码的执行才会轮到下一个.then()
-         promise.resolve().then(cb)中的cb 总是会本次循环 优先执行；
-         如果回调中 还有 promise.resolve().then(cb) 在下一轮中，这个微任务优先执行
-          v8 对于promise的单例链式调用做了优化  从上向下，每两个.then()回调中产生的微任务最先被执行
-           如果下面的代码 嵌套的promise.resolve().then() 的层级过多 代码的执行顺序会有不同
+- ```javascript
+  Promise.resolve()
+    .then(function then1() {
+      Promise.resolve()
+        .then(function then2() {
+          console.log(1);
+        })
+        .then(function then3() {
+          console.log(2);
+        });
+    })
+    .then(function then4() {
+      Promise.resolve("then4")
+        .then((res) => {
+          console.log(res);
+        })
+        .then(() => {
+          console.log("last~~~~~~");
+        });
+    });
   ```
+
+  > 代码执行步骤详解 见 `微任务嵌套微任务.png`
+
+  - 总结
+    - 1： 第一个 tick 的每个微任务执行时候，新产生的微任务都会加入到下一个 tick，以此类推
+    - 2： 只有第一个 tick 的微任务执行完成，才会去执行下一个 tick 产生的微任务，以此类推
+
+## promise+ 事件
+
+```javascript
+<button id="btn"></button>
+
+let btn = document.getElementById("btn");
+      btn.addEventListener("click", () => {
+        Promise.resolve().then(() => {
+          console.log("click1~~");
+        });
+        console.log(1);
+      });
+      btn.addEventListener("click", () => {
+        Promise.resolve().then(() => {
+          console.log("click2~~");
+        });
+        console.log(2);
+      });
+
+  点击按钮       打印的输出为 1 , click1~~ , 2  ,click2~~
+          分析： 点击一次，click事件注册的回到函数都会执行
+                代码遇见then()加入到回调队列，执行第二个回调同理
+
+
+ btn.click()    打印的输出为 1 , 2 , click1~~ ,2 click2~~
+         分析：   btn的click函数自执行， 此时所有的click注册的函数为同步函数 fn1,fn2
+		const fn1 = () => {
+       		 Promise.resolve().then(() => {
+                     console.log("click1~~");
+                 });
+                  console.log(1);
+                });
+		const fn2= () => {
+       		  Promise.resolve().then(() => {
+                     console.log("click2~~");
+                  });
+                   console.log(2);
+                 });
+
+                所以代码的执行顺序 1 , 2 , click1~~ ,2 click2~~
+```
