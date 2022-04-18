@@ -32,10 +32,13 @@ async function getPosts(userId) {
 async function addPosts(userId) {
   const posts = await getPosts(userId);
   console.log(totalCount, "totalCount before");
-  totalCount += posts; //  读取totalCount的值是微任务,第二次读取totalCount时,此时第一次的 totalCount已经被赋值
+  totalCount += posts;
+  //  读取和赋值totalCount的是微任务,一定会等到getPosts的结果返回.
+  //  将返回的结果赋值给totalCount,
+  // 第二次读取totalCount时, 此时全局的totalCount已经第一次执行完的getPosts()赋值
   console.log(totalCount, "totalCount after");
   //   console.log("total brfore", totalCount);
-  //   会导致 promise 竞态的写法 addPosts(1)与addPosts(2)读取读取totalCount是同步读取都是初始值0
+  //   会导致 promise 竞态的写法 addPosts(1)与addPosts(2)同步读取totalCount时,读取都是初始值0
   // totalCount += await getPosts(userId);
   //   console.log("total after", totalCount);
 }
