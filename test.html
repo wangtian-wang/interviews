@@ -25,7 +25,37 @@
       <button id="btn1">点击1</button>
       <!-- <button id="btn2">点击</button>
       <button id="btn3">点击</button> -->
+
+      <div
+        class="drop_container"
+        ondrop="handleDrop(e)"
+        ondragover="handleDragOver(e)"
+      ></div>
+      <div class="source_container">
+        <img
+          src="img/img.png"
+          id="dropedImg"
+          ondragstart="handleDragStart(e)"
+          draggable="true"
+          alt=""
+        />
+      </div>
     </div>
+
+    <script>
+      function handleDragStart(e) {
+        e.dataTransfer.setData("Img", e.target.id);
+      }
+      function handleDragOver(e) {
+        e.preventDefault();
+      }
+      function handleDrop(e) {
+        e.preventDefault();
+        let data = e.dataTransfer.getData("Img");
+        //将要拖拽的元素作为子节点插入到目标元素
+        e.target.appendChild(document.getElementById(data));
+      }
+    </script>
     <!-- <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/qs/6.10.1/qs.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
