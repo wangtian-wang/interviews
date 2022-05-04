@@ -15,8 +15,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-test.html
-test*.js
+/test.html
+/test.js
 # Editor directories and files
 .idea
 .vscode
@@ -25,6 +25,4 @@ test*.js
 *.njsproj
 *.sln
 *.sw?
-micro-spa/node_modules
-single-spa/node_modules
-single-spa-subapp/node_modules
+
