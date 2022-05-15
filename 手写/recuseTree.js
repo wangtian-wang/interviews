@@ -33,4 +33,24 @@ function formatTree(array) {
   recuseFormat(parent, children);
   return parent;
 }
-console.log(formatTree(menuOriginal));
+// console.log(formatTree(menuOriginal));
+// 该方法省去了递归调用,比较简单 建议使用该方法
+function treeFormat(arr) {
+  let map = {};
+  arr.forEach((item) => {
+    map[item.id] = item;
+  });
+  const result = [];
+  arr.forEach((item) => {
+    let parent = map[item.parentId];
+    if (parent) {
+      parent.children = parent.children || [];
+      parent.children.push(item);
+    } else {
+      result.push(item);
+    }
+  });
+  return result;
+}
+let result = treeFormat(menuOriginal);
+console.log(result, "-------");
