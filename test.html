@@ -42,20 +42,7 @@
       </div>
     </div>
 
-    <script>
-      function handleDragStart(e) {
-        e.dataTransfer.setData("Img", e.target.id);
-      }
-      function handleDragOver(e) {
-        e.preventDefault();
-      }
-      function handleDrop(e) {
-        e.preventDefault();
-        let data = e.dataTransfer.getData("Img");
-        //将要拖拽的元素作为子节点插入到目标元素
-        e.target.appendChild(document.getElementById(data));
-      }
-    </script>
+    <!-- <script src="./手写/recuseTree.js"></script> -->
     <!-- <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/qs/6.10.1/qs.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
@@ -194,6 +181,7 @@
     </script>
     <script src="./手写/bind.js"></script>
     <script src="./lib/my-axios/cancelRepeat.js"></script> -->
-    <script src="./算法/三数之和.js"></script>
+    <!-- <script src="./算法/三数之和.js"></script> -->
+    <script src="./手写/求在数组中找出最接近给定值的元素.js"></script>
   </body>
 </html>
