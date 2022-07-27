@@ -1,7 +1,6 @@
-// console.log(new Number(2) == 2)  true;
-
 /**
- new Number(2) 包装类 原始值为2    
+ new Number(2) 包装类 原始值为2  
+ console.log(new Number(2) == 2)  true;
  */
 
 /**
@@ -27,14 +26,22 @@ JSON.stringify()
 3： error regexp这些类型的 属性值对应的属性会变为空对象
 4 对于属性值类型是 data类型的 会将属性值变为字符串 即使再次变为对象 属性值还是字符串
 
+*/
 
-
-
-
-
-
-
-  */
+/**
+  浅拷贝:
+    - 数组浅拷贝
+        [...arr]
+        arr.concat();
+        arr.slice()
+    - 对象浅拷贝
+       {...}
+       object.assgin()
+       循环对象,拿到对象中的属性 和值 放到另外一个对象中
+       - 缺点: 
+        对于symbol类型的key, object.assgin() 和 for in 都不能拿到
+        getOwnPerportySymbols() -> 获取symbol类型的key
+ */
 const testObj = {
   age: 32,
   wife: {
@@ -124,3 +131,31 @@ const clone = (target, deep = false, cache = new WeakMap()) => {
     return result;
   }
 };
+
+function deepClone(obj, hash = new WeakMap()) {
+  if (hash.has(obj)) {
+    return obj;
+  }
+  let res = null;
+  const reference = [Date, RegExp, Set, WeakSet, Map, WeakMap, Error];
+
+  if (reference.includes(obj?.constructor)) {
+    res = new obj.constructor(obj);
+  } else if (Array.isArray(obj)) {
+    res = [];
+    obj.forEach((e, i) => {
+      res[i] = deepClone(e);
+    });
+  } else if (typeof obj === "Object" && obj !== null) {
+    res = {};
+    for (const key in obj) {
+      if (Object.hasOwnProperty.call(obj, key)) {
+        res[key] = deepClone(obj[key]);
+      }
+    }
+  } else {
+    res = obj;
+  }
+  hash.set(obj, res);
+  return res;
+}
