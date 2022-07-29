@@ -1,6 +1,11 @@
 /* 
 数据类型 
-      1： 原始的数据类型；2：每个数据都是独一无二的；3：不能使用new 操作符；4:可以基于Object([value])变为包装器对象【实例对象】
+      1： 原始的数据类型；
+      2：每个数据都是独一无二的；
+      3：不能使用new 操作符；
+      4:可以基于Object([value])变为包装器对象【实例对象】
+      5: 不能进行四则运算 只能用显示的方式转为字符串和布尔值 String(Symbol()) Boolean(Symbol()) = true
+      reflect.ownKeys()可以获取symbol属性
 
 */
 
@@ -14,7 +19,7 @@ console.log(a === b) false
 
 2： 进阶用法：
 Symbol.for("descriptor");
-用法： 从全局的Symbol注册表里面 找对应的symbol；找到则返回，找不到就创建一个
+用法：在创建b的时候, 从全局的Symbol注册表里面 找对应的symbol；找到则返回，找不到就创建一个
 const a = Symbol.for("AAA");
 const b = Symbol.for("AAA");
 console.log(a === b); true
@@ -184,16 +189,23 @@ const fn3 = () => {
     console.log(item);
   }
 })();
-
-
-
-
-
-
-
 */
-/*  */
-/*  */
-/*  */
-/*  */
-let arr = ["a", "b", "c", "d"];
+// 举例
+const game = {
+  name: "aaa",
+  sex: "aaa",
+};
+const game1 = {
+  name: Symbol("a"),
+  sex: Symbol("a"),
+};
+
+function test(type) {
+  if (type === game1.name) {
+    console.log(game1.name, "----");
+  }
+  if (type === game1.sex) {
+    console.log(game1.sex);
+  }
+}
+test(game1.sex);
