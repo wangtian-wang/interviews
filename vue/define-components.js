@@ -54,3 +54,37 @@ export default {
 
 
 */
+export function createRouter(options) {
+  const router = {
+    install(app) {
+      const RouterLink = {
+        template: "",
+      };
+      const RouterView = {
+        template: "",
+        data() {},
+      };
+      const route = [];
+      app.component("router-link", RouterLink);
+      app.component("router-view", RouterView);
+    },
+  };
+  const routerHistory = options.history;
+  let compo = null,
+    compo1 = null;
+  window.addEventListener(
+    "hashchange",
+    (e) => {
+      compo = () => import(`view/${e.path}.vue`);
+    },
+    false
+  );
+  window.addEventListener(
+    "popstate",
+    (e) => {
+      compo1 = () => import(`view/${e.path}.vue`);
+    },
+    false
+  );
+  return router;
+}

@@ -1,3 +1,5 @@
+/** 间隔1秒 输出打印的结果 */
+
 function square(num) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -16,5 +18,13 @@ function test(i) {
     console.log(result);
   });
   test(i + 1);
+  /**
+    多个promise实例then方法     在1s后改变状态的话， 回调函数  同时 执行
+    p.then(async () => {
+        let result = await square(list[i]);
+        console.log(result);
+    });
+    test(i + 1); 
+    */
 }
 test(0);

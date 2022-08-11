@@ -1,4 +1,4 @@
-export const checkPromise = (fn) => {
+const checkPromise = (fn) => {
   if (fn !== null && typeof fn === "function") {
     var then;
     try {
@@ -10,4 +10,7 @@ export const checkPromise = (fn) => {
   } else {
     return false;
   }
+};
+module.exports = {
+  checkPromise,
 };

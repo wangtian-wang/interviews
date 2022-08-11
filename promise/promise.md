@@ -305,34 +305,56 @@ limitPromise(taskArray, handlerPromise, 3);
 
 ## promise 微任务嵌套微任务
 
-- resolve 方法会将实参包装为一个 promise 对象
-- ```javascript
-  Promise.resolve()
-    .then(function then1() {
-      Promise.resolve()
-        .then(function then2() {
-          console.log(1);
-        })
-        .then(function then3() {
-          console.log(2);
-        });
-    })
-    .then(function then4() {
-      Promise.resolve("then4")
-        .then((res) => {
-          console.log(res);
-        })
-        .then(() => {
-          console.log("last~~~~~~");
-        });
-    });
-  ```
+resolve 方法会将实参包装为一个 promise 对象
 
-  > 代码执行步骤详解 见 `微任务嵌套微任务.png`
+```javascript
+Promise.resolve()
+  .then(function then1() {
+    Promise.resolve()
+      .then(function then2() {
+        console.log(1);
+      })
+      .then(function then3() {
+        console.log(2);
+      });
+  })
+  .then(function then4() {
+    Promise.resolve("then4")
+      .then((res) => {
+        console.log(res);
+      })
+      .then(() => {
+        console.log("last~~~~~~");
+      });
+  });
+console.log("macro task");
+```
 
-  - 总结
-    - 1： 第一个 tick 的每个微任务执行时候，新产生的微任务都会加入到下一个 tick，以此类推
-    - 2： 只有第一个 tick 的微任务执行完成，才会去执行下一个 tick 产生的微任务，以此类推
+代码执行步骤外层的两个.then 为一个实例,所以第一个.then 执行完成的状态决定 外层第二个.then 执行的状态
+1: 代码执行遇到外层第一个.then 加入微任务队列,此时因为第一个.then 还没有执行,所以代码暂时执行不到外层第二个.then 暂时先不看这个.then
+
+    2: 代码从上往下执行,输出macro task
+    
+    3: 然后去微任务队列里面执行任务, 代码开始执行.then的回调函数then1, 发现 函数内部又开启了一个微任务then2, 于是将then2加入到微任务队列 then3先不看 此时微任务队列里面只有.then
+    
+    4: 继续清空微任务队列, 发现只有.then2 执行.then2 函数, 输出 1 此时.then3 被加入微任务队列
+    
+    5: 继续清空微任务队列,发现只有.then3, 执行.then3函数, 输出2  此时 第一个外层的.then函数执行完毕, 可以执行第二个.then
+    
+    6: 重复上述步骤,直到微任务运行完成
+
+但是以上结论只有在微任务嵌套的层级为 2 级的时候,假设给.then2 里面嵌套在多一层 promise.resolve 的结构,打印的结果会和以上分析思路有出入.
+
+总结
+
+- 1： 第一个 tick 的每个微任务执行时候，新产生的微任务都会加入到下一个 tick，以此类推
+- 2： 只有第一个 tick 的微任务执行完成，才会去执行下一个 tick 产生的微任务，以此类推
+
+## 单实例的 then,与每个实例都有 then 方法 调用的区别
+
+单个实例的.then 链式调用, 上一个 then 的状态明确后,程序才会执行下一个.then , 执行顺序为先后顺序
+
+多实例的.then 方法 同时执行的话,同时输出
 
 ## promise+ 事件
 
@@ -373,5 +395,24 @@ let btn = document.getElementById("btn");
                    console.log(2);
                  });
 
-                所以代码的执行顺序 1 , 2 , click1~~ ,2 click2~~
+                所以代码的执行顺序 1 , 2 , click1~~ , click2~~
 ```
+
+## Promise.all 和 Promise.allSettled()的区别
+
+#### 	promise.all 
+
+​			1: promise.all 接收一个数组,每个数组项都是promise, 当所有的数组项的状态为resolve的时候,返回的promise实例的状态为成功
+
+​			否则,返回的promise的状态为reject,并且reject的是第一个抛出错误的信息
+
+​			2: 若传入的是空数组,会返回成功状态的promise实例
+
+​	promise.allSettled
+
+​		  1:  接收一个数组,每个数组项都是promise,返回一个<font color="red">成功状态</font>promise的实例,并且带有一个对象数组,收集的是每个数组项的执行结果无论是成功或是失败
+
+​		  2: 若传入的是空数组,会返回成功状态的promise实例
+
+​				
+
