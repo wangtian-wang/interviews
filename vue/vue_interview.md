@@ -117,67 +117,85 @@
 
    > 使用jsonp来加载当前路由对应的组件
 
-4. #### 怎样实现
+#### 4: 	router-link 和 router-view的实现原理
 
-   1. 监听浏览器的地址栏拿到当前的url,保存起来
-   2. vueRouter 与vue连接起来,注册全局的组件,在组件内部可以访问 router | route
+> #### router-link: 
+>
+> #####       主要作用: 
+>
+> ###### 			路由导航, 
+>
+> #####        原理: 
+>
+> ###### 			vue-router会监听`pop state` 事件,点击router-link后,页面不会刷新,会拿出当前path去route里面找出对应的组件, router-view将该组件渲染出来 router-link会默认生成a标签, 点击后取消默认跳转行为而是执行一个`navigate` 方法,会监听`pushstate`事件,匹配处一个路由`injectedRoute` `router-view` 的渲染函数依赖这个路由,根据该路由获取要渲染的组件并重新渲染该组件.  
+>
+> ####   router-view
+>
+> #### 	主要作用:
+>
+> ##### 				组件内容渲染
 
-   ```js
-   export function createRouter(options) {
-     // 保存用户传入的配置项
-     // 监听hashchange | popstate事件, 在对应的回调函数中 根据path匹配对应的路由
-     // 返回一个router实例,这个router实例有install方法;注册了router-link| router-view 全局组件;在组件内部可以访问 router | route
-     const routerHistory = options.history;
-    
-     let compo = null,
-       compo1 = null;
-     window.addEventListener(
-       "hashchange",
-       (e) => {
-         compo = () => import(`view/${e.path}.vue`);
-       },
-       false
-     );
-     window.addEventListener(
-       "popstate",
-       (e) => {
-         compo1 = () => import(`view/${e.path}.vue`);
-       },
-       false
-     );
-     return router;
-   }
-   createRouter.install = function(app){
-     app.mixin({
-       beforeCreate(){
-         if(this.$options && this.$options.router){
-           this._root = this;
-           this._router = this.$options.router
-         }else {
-           this._root = this.$parent._root
-         }
-         Object.definedProperty(this,'$router',{
-           get(){
-             return this._root._router
-           }
-         }
-       }
-     })
-     app.component("router-link",{
-       render(h){
-       	const routesMap = this._self._router.routesMap;
-         const component = routesMap[current];
-       	return h(component)
-       }
-     });
-     
-    
-   }
-   ```
+#### 5: 简单的实现vue-router
 
-   
+1. 监听浏览器的地址栏拿到当前的url,保存起来
+2. vueRouter 与vue连接起来,注册全局的组件,在组件内部可以访问 router | route
 
-   
+```js
+export function createRouter(options) {
+  // 保存用户传入的配置项
+  // 监听hashchange | popstate事件, 在对应的回调函数中 根据path匹配对应的路由
+  // 返回一个router实例,这个router实例有install方法;注册了router-link| router-view 全局组件;在组件内部可以访问 router | route
+  const routerHistory = options.history;
+ 
+  let compo = null,
+    compo1 = null;
+  window.addEventListener(
+    "hashchange",
+    (e) => {
+      compo = () => import(`view/${e.path}.vue`);
+    },
+    false
+  );
+  window.addEventListener(
+    "popstate",
+    (e) => {
+      compo1 = () => import(`view/${e.path}.vue`);
+    },
+    false
+  );
+  return router;
+}
+createRouter.install = function(app){
+  app.mixin({
+    beforeCreate(){
+      if(this.$options && this.$options.router){
+        this._root = this;
+        this._router = this.$options.router
+      }else {
+        this._root = this.$parent._root
+      }
+      Object.definedProperty(this,'$router',{
+        get(){
+          return this._root._router
+        }
+      }
+    }
+  })
+  app.component("router-link",{
+    render(h){
+    	const routesMap = this._self._router.routesMap;
+      const component = routesMap[current];
+    	return h(component)
+    }
+  });
+  
+ 
+}
+```
+
+
+
+
 
 ## vue中key的作用是啥?
 

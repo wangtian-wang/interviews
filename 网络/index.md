@@ -21,7 +21,7 @@ header("Content-Security-Policy: upgraded-insecure-requests");
 4: 使用相对协议,在资源头里面不加入 http 或者 https
 
 1. 问题的出现
-   一般主站升级为 https 后，相关的站点都会变为 https，但是如果引用了第三放的 api 没有使用 https，会出现混用的问题 这个问题归为混合内容 MDN 中有相关的定义。
+   一般主站升级为 https 后，相关的站点都会变为 https，但是如果引用了第三放的 api 没有使用 https，或者图片加载的 url 是 http 的会出现混用的问题 这个问题归为混合内容 MDN 中有相关的定义。
 2. 使用负载均衡可以解决该问题
 
 ## 对称加密和非对称加密的区别？？

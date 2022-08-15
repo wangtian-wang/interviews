@@ -1,13 +1,20 @@
+## webpack
+
+webpack 是一个前端模块打包器, 提供了一整套的前端项目模块化方案,轻松实现对前端项目开发过程中涉及到的资源进行模块化
+
+## 构建流程
+
+## webpack4 webpack5 的区别
+
 ## what webpack can do
 
-```
- 1: 代码转换
- 2：文件优化
- 3：代码分割
- 4：自动部署
- 5：模块合并
- 6：自动刷新
- 7： 代码校验
+```javascript
+
+ 1: 对于有环境兼容问题的代码,通过loader机制,对代码实现编译转换,然后再进行打包
+ 2：将零散的js代码 打包到一个js文件中
+ 3：在js中以模块化的方式加载任何类型的资源文件
+ 4：代码分包
+
 
 ```
 
@@ -21,9 +28,9 @@ npx 是 node 提供的 API，会自动去找 node_modules 里面的webpack 相�
 
 ## 面试题
 
-**_webpack 是怎样打包的_**
+**_webpack 是怎样打包文件的_**
 
-```
+```js
 
 1 ： 立即执行函数；
 2： 参数通过对象的形式传递
@@ -31,6 +38,8 @@ npx 是 node 提供的 API，会自动去找 node_modules 里面的webpack 相�
 3：eval（‘字符串代码’） 执行整个字符串代码
 4：如果文件有多个依赖，通过——webpack_require__的方法，递归的加载依赖的文件最终打包形成一个文件
 ```
+
+**webpack 的构建流程**
 
 **_webpack 的打包优化_**
 
@@ -126,7 +135,8 @@ module.exports = {
 }
 ```
 
-webpack
+## webpack
+
 : 定义: 文件打包利器
 如何使打包速度变快
 : 使用最新版本的 webpack
@@ -138,6 +148,9 @@ webpack index.js 当 webpack 安装在全局的时候,运行这个命令可以�
 webpack-cli 的作用是:使 webpack 能够在命令行里面运行打包命令
 各种 loader
 loader 之间的执行顺序
+
+## loader 的执行顺序
+
 : 当 loader 在一行写的时候,匹配执行的顺序是从右到左,
 : 当 loader 分开写的时候,匹配执行的顺序为从下到上,上面的 loader 最后去发挥作用
 : 1: file-loader 将图片类型的文件移动到 dist 目录下面,将文件的路径做了变更,放入到了 index.JS 中
@@ -163,7 +176,7 @@ test: /\.(sass|less|stylus)$/,
             loader: "css-loader",
             options: {
                 importLoaders : 2,
-                module:true 
+                module:true
                 开启模块化的 css,将 css 当做一个对象,使用的时候,使用的是 style.class,避免每个模块之间的样式冲突
             }
         },
@@ -191,7 +204,7 @@ main: '/src/index.js',
 sub: '/src/index1.js'
 }
 output : {
-publicPath: http://www.cdn.com 加外网路径 或者公共路径 打包好的 JS 文件会自动加上这些路径
+publicPath: http://www.cdn.com 加外网路径 或者公共资源加载路径 打包好的 JS 文件会自动加上这些路径
 filename: '[name].js',
 chunkFilename: '[name].chunk.js',
 在入口文件中引入的其他的 JS 文件的打包分割之后的名字
@@ -204,7 +217,8 @@ proxy: {
 '/api' : 'http://www.baidu.com' 访问这个/api 就会自动转到代理服务器
 }
 }
-sourcemap 的隐射原理: 面试会问
+
+## sourcemap 的隐射原理
 
 ```
 mode: 'production',
@@ -228,46 +242,46 @@ hot : true,
 hotOnly: true 不管能不能成功更新,都是保留当前的页面上的内容
 }
 手动配置在一个文件内引入多个模块,当一个模块发生变化之后,不影响其他模块的变化,这个时候,就需要对这个变化的模块做一个监听,
-: 因为类似于 vue 之类的框架已经将这个方法封装了起来,所以我们不需要去写下面这些代码
-:
-实现 hot replace 的方法
-if (module.hot) {
-module.hot.accept('./change', () => {
-1 remove old file
-2 and then execute new file
-2 number( )
-}
-}
-babel-loader @babel/core@7.0.2 是 Bebel 和 webpack 通信的桥梁,并不会将文件中的 es6 语法转换成为 es5 @babel/preset-env 里面有 es6 --> es5 的规则
-@ babel/polyfill 使用需要引入 将变量和函数翻译,能在低版本浏览器中使用,实现低版本浏览器不能实现的内容
-只将 当前 JS 文件中使用到的新语法,变量翻译
-module : {
-rules:[
-{
-test : /\.js$/,
-execlude: /node_modules/,
-loader: 'babel-loader',
-options: {
-presets: [
-[
-'@babel/preset-env',
-{
-useBuiltIns: 'usage',
-usage 会根据配置的浏览器兼容，以及你代码中用到的 API 来进行 polyfill，实现了按需添加。弥补这个浏览器所不能兼容的内容
-target: {
-chorme" '67',
-如果当前的 target 浏览器支持这个语法,就不用转译
-}
-}
-]
-]
-}
-},{
 
-           other rules ....
+|                               : 因为类似于 vue 之类的框架已经将这个方法封装了起来,所以我们不需要去写下面这些代码                                |
+| :---------------------------------------------------------------------------------------------------------------------------------------------: |
+|                                                             实现 hot replace 的方法                                                             |
+|                                                                if (module.hot) {                                                                |
+|                                                      module.hot.accept('./change', () => {                                                      |
+|                                                                1 remove old file                                                                |
+|                                                           2 and then execute new file                                                           |
+|                                                                   2 number( )                                                                   |
+|                                                                        }                                                                        |
+|                                                                        }                                                                        |
+| babel-loader @babel/core@7.0.2 是 Bebel 和 webpack 通信的桥梁,并不会将文件中的 es6 语法转换成为 es5 @babel/preset-env 里面有 es6 --> es5 的规则 |
+|                      @ babel/polyfill 使用需要引入 将变量和函数翻译,能在低版本浏览器中使用,实现低版本浏览器不能实现的内容                       |
+|                                                   只将 当前 JS 文件中使用到的新语法,变量翻译                                                    |
+|                                                                   module : {                                                                    |
+|                                                                     rules:[                                                                     |
+|                                                                        {                                                                        |
+|                                                                 test : /\.js$/,                                                                 |
+|                                                            execlude: /node_modules/,                                                            |
+|                                                             loader: 'babel-loader',                                                             |
+|                                                                   options: {                                                                    |
+|                                                                   presets: [                                                                    |
+|                                                                        [                                                                        |
+|                                                              '@babel/preset-env',                                                               |
+|                                                                        {                                                                        |
+|                                                              useBuiltIns: 'usage',                                                              |
+|              usage 会根据配置的浏览器兼容，以及你代码中用到的 API 来进行 polyfill，实现了按需添加。弥补这个浏览器所不能兼容的内容               |
+|                                                                    target: {                                                                    |
+|                                                                  chorme" '67',                                                                  |
+|                                                 如果当前的 target 浏览器支持这个语法,就不用转译                                                 |
+|                                                                        }                                                                        |
+|                                                                        }                                                                        |
+|                                                                        ]                                                                        |
+|                                                                        ]                                                                        |
+|                                                                        }                                                                        |
+|                                                                       },{                                                                       |
 
+    other rules ....
 
-        },
+    },
 
     ]
     在对一些 ui 库打包的时候,为俩防止变量污染,采取另外一种配置方式
@@ -287,12 +301,9 @@ chorme" '67',
                 "useESModules" : false
              }
 
+    ]
 
-
-            ]
-
-
-        ]
+    ]
     }
 
 tree shaking 将一个模块里面[可能有很多的方法]不用的子模块[某些没有用到的方法]去除掉
@@ -414,7 +425,7 @@ options: {
 importLoaders : 2,
 module:true
 
-            }
+    }
         },
         "sass-loader",
         'postcss-loader'
@@ -514,30 +525,31 @@ ESLINT
 4: npm i babel-eslint 安装 babel 解析器
 4-4: npm i eslint-loader
 5: 在编辑器里面安装 eslint 插件,让这个插件解决这个问题
-: 将 eslint 提示的有问题的组件的检查规则设置为 0
-:
-配置文件
-globals: {
-document: false 全局变量不能被覆盖
-},
-module: {
-rules: [{
-test: /\.js$/,
-exclude: /node_modules/,
-use: ['babel-loader',{
-loader: 'eslint-loader',
-options: {
-fix:true
-},
-force: 'pre' 强制先执行语法校验
-}]
-} ]
-},
-devServer: {
-overlay: true --> 将语法的错误在浏览器上面提示
-}
-如何提升 webpack 的打包速度
-1: 迭代目前的版本(node, npm ,yarn)
-2: 尽可能少的应用 loader
-include exclude 约定只有当某一模块必须要使用 某一 loader 的时候才去使用这个 loader, 有的文件不需要使用,就排除在外
-3: plugin 尽可能精确,确保可靠,不同的模式,使用不同的插件
+
+|                                 : 将 eslint 提示的有问题的组件的检查规则设置为 0                                  |
+| :---------------------------------------------------------------------------------------------------------------: |
+|                                                     配置文件                                                      |
+|                                                    globals: {                                                     |
+|                                        document: false 全局变量不能被覆盖                                         |
+|                                                        },                                                         |
+|                                                     module: {                                                     |
+|                                                     rules: [{                                                     |
+|                                                  test: /\.js$/,                                                   |
+|                                             exclude: /node_modules/,                                              |
+|                                              use: ['babel-loader',{                                               |
+|                                             loader: 'eslint-loader',                                              |
+|                                                    options: {                                                     |
+|                                                     fix:true                                                      |
+|                                                        },                                                         |
+|                                          force: 'pre' 强制先执行语法校验                                          |
+|                                                        }]                                                         |
+|                                                        } ]                                                        |
+|                                                        },                                                         |
+|                                                   devServer: {                                                    |
+|                                  overlay: true --> 将语法的错误在浏览器上面提示                                   |
+|                                                         }                                                         |
+|                                            如何提升 webpack 的打包速度                                            |
+|                                        1: 迭代目前的版本(node, npm ,yarn)                                         |
+|                                             2: 尽可能少的应用 loader                                              |
+| include exclude 约定只有当某一模块必须要使用 某一 loader 的时候才去使用这个 loader, 有的文件不需要使用,就排除在外 |
+|                              3: plugin 尽可能精确,确保可靠,不同的模式,使用不同的插件                              |
