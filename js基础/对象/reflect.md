@@ -27,7 +27,7 @@ Reflect.has(target, prop) 检测对象是否有某种属性；
 ## proxy
 
 - 可以对被代理的对象经过一系列的操作，
-- 有相应的 handler 函数，来进行辅助操作；handler 方法其实是对于对象原型上的方法的代理 对代理对象执行 in/getPrototype 等方法时,会触发 handler 对应的方法(`<font color="red">`当 handler 对应的方法已经被定义`</font>`)
+- 有相应的 handler 函数，来进行辅助操作；handler 方法其实是对于对象原型上的方法的代理 对代理对象执行 in/getPrototype 等方法时,会触发 handler 对应的方法(`<font color="red">`当 handler 对应的方法已经被定义 `</font>`)
 - 最常用的方法是 ： get ： set ： has 只能在判断一个对象上面有某种属性的时候 property inobject 可用 不可以拦截 for in 遍历的方法 ： delete
 - Proxy 的 set 方法，需要 return true 告诉程序，当前执行成功，后面可以继续执行
 
@@ -71,35 +71,80 @@ proxy.name;
 2: 指向 get 函数调用对象-- 传递正确的调用者指向
 
 ```js
-(原型上get/set属性访问器的'屏蔽'效果)
+ (原型上get/set属性访问器的'屏蔽'效果)
 
-const parent = {
-  get value() {
-    return '19Qingfeng';
+
+
+// 精确的收集.访问符 所依赖的
+const target = {
+  name: "peter",
+  // 对象的get访问器中的this指向
+  get age() {
+    return this.name + "~";
   },
 };
+let count = 0;
+const proxy = new Proxy(target, {
+  get(target, key, recevier) {
+    console.log(" get ~~~~~", key);
+    // case1
+    // get执行一次 访问age的时候,间接访问了 name 但是name没有被收集
+    //   return target[key]
 
-const handler =  {
-  // receiver表示调用get的对象
-  get(target, key, receiver) {
-    console.log(receiver === proxy); // false
-    console.log(receiver === obj) // true
-    console.log(this === handler); // true
-    return target[key];
+    // case 2
+    // get 执行2次 分别收集了 age name
+
+    return Reflect.get(target, key, recevier);
   },
-};
-const proxy = new Proxy(parent,handler);
+  set(target, key, newValue, recevier) {
+    return Reflect.set(target, key, newValue, recevier);
+  },
+});
+// 当访问 age属性时 应该收集2个 依赖的属性 console.log(target.age)
 
-const obj = {
-  name: 'wang.haoyu',
-};
+//  proxy set 方法 会触发原型链,既触发父亲的set方法
+let obj = {};
+let proObj = { a: 1 };
+let proxyProObj = new Proxy(proObj, {
+  get(target, key, recevier) {
+    return Reflect.get(target, key, recevier);
+  },
+  set(target, key, value, recevier) {
+    //  屏蔽原型链 的set  这样设置的话  objProxy的a设置的值无效
+    if (proxyProObj == recevier) {
+      return Reflect.set(target, key, value, recevier);
+    }
 
-// 设置obj继承与parent的代理对象proxy
-Object.setPrototypeOf(obj, proxy);
-obj.value // log输出为false
+    /**
+        这样写的话 只会给receiver设置上属性 不会影响target
+         return Reflect.set(target, key, value, recevier);
+       */
+  },
+});
+// obj赋值操作 会引起proxyProObj的 set方法触发
+Object.setPrototypeOf(obj, proxyProObj);
+let objProxy = new Proxy(obj, {
+  get(target, key, recevier) {
+    return Reflect.get(target, key, recevier);
+  },
+  set(target, key, value, recevier) {
+    console.log("obj");
+    return Reflect.set(target, key, value, recevier);
+  },
+});
+objProxy.a = 100;
+
+
+
+
+
+
+
+
+
 ```
 
-### 总结: get 访问器的 reciver 的意义就是为了在 get 中传递正确的上下文; reciver 表示`<font color="red">`代理对象本身或者继承与代理对象的对象`</font>`
+### 总结: get 访问器的 reciver 的意义就是为了在 get 中传递正确的上下文; reciver 表示 `<font color="red">`代理对象本身或者继承与代理对象的对象 `</font>`
 
 ### 注意: get 中的 this 指向的是代理的 handler 对象
 
@@ -137,3 +182,5 @@ Reflect.get(target, key, receiver) === target[key].call(recevier) 伪代码 相�
 ```
 
 ### 总结: reflect 中的 receiver `<font color="red">`可以修改 reflect 中属性访问器中的 this 指向为传入的 receiver 对象;`</font>`
+
+参考文章 :https://mp.weixin.qq.com/s/A1uRq0XwhZPRIZetrEFM0g

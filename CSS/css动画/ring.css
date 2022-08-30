@@ -1,0 +1,44 @@
+/*
+dom结构
+
+<div class="content">
+    <div class="box"></div>
+</div>
+
+
+*/
+
+.content {
+  width: 200px;
+  height: 200px;
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: 50%;
+  background-image: -webkit-linear-gradient(
+    top,
+    red 0%,
+    blue 30%,
+    yellow 60%,
+    green 90%
+  );
+  background-image: -moz-linear-gradient(
+    top,
+    red 0%,
+    blue 30%,
+    yellow 60%,
+    green 90%
+  );
+  background-image: linear-gradient(
+    top,
+    red 0%,
+    blue 30%,
+    yellow 60%,
+    green 90%
+  );
+}
+.box {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #fff;
+}

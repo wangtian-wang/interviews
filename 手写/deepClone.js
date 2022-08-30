@@ -42,17 +42,22 @@ JSON.stringify()
         对于symbol类型的key, object.assgin() 和 for in 都不能拿到
         getOwnPerportySymbols() -> 获取symbol类型的key
  */
+
 const testObj = {
   age: 32,
   wife: {
     age: 22,
     height: 168 + "cm",
   },
+  date: new Date(),
+  fn() {},
+  bigNum: Infinity,
   arr: [1, 2, 3, 4],
 };
-// testObj.gf = testObj;  循环引用
+// testObj.obj = testObj; 循环引用
 
-// new WeakMap() 解决循环引用 而产生的
+// new WeakMap() 解决循环引用
+//  递归拷贝对象的时候 已经处理过的对象 会直接返回拷贝的对象的所有属性 不再递归的执行程序
 const deepClone = (target, hashMap = new WeakMap()) => {
   if (target == undefined || typeof target !== "object") {
     return target;
@@ -68,7 +73,6 @@ const deepClone = (target, hashMap = new WeakMap()) => {
     return hashMap.get(target);
   }
   let result = new target.constructor(); // 只有当这个target为引用类型值时候，才会重生生成result
-  console.log(result);
   hashMap.set(target, result);
   for (let k in target) {
     if (target.hasOwnProperty(k)) {
@@ -77,7 +81,10 @@ const deepClone = (target, hashMap = new WeakMap()) => {
   }
   return result;
 };
-console.log(deepClone(testObj));
+const rs = deepClone(testObj);
+console.log(rs === testObj);
+rs.wife.age = "30";
+console.log(rs);
 
 // 实现深浅拷贝的可选
 const clone = (target, deep = false, cache = new WeakMap()) => {
@@ -132,7 +139,7 @@ const clone = (target, deep = false, cache = new WeakMap()) => {
   }
 };
 
-function deepClone(obj, hash = new WeakMap()) {
+function deepClone2(obj, hash = new WeakMap()) {
   if (hash.has(obj)) {
     return obj;
   }
@@ -144,13 +151,13 @@ function deepClone(obj, hash = new WeakMap()) {
   } else if (Array.isArray(obj)) {
     res = [];
     obj.forEach((e, i) => {
-      res[i] = deepClone(e);
+      res[i] = deepClone2(e);
     });
   } else if (typeof obj === "Object" && obj !== null) {
     res = {};
     for (const key in obj) {
       if (Object.hasOwnProperty.call(obj, key)) {
-        res[key] = deepClone(obj[key]);
+        res[key] = deepClone2(obj[key]);
       }
     }
   } else {

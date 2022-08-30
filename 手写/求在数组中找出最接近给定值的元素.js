@@ -19,12 +19,12 @@ const arr = [1, 3, 5, 6, 20];
 let num = getCloseNumberPlus(arr, 7);
 let num2 = getCloseNumberPlus(arr, 3);
 
-console.log(num, "num");
-console.log(num2, "num2");
+// console.log(num, "num");
+// console.log(num2, "num2");
 // 有序数组
 // 二分查找方法   o logN
 
-const arr1 = [1, 3, 5, 8, 10, 11, 14, 16, 18];
+const arr1 = [1, 3, 5, 6, 7, 8, 19, 20, 30];
 const grtCloseNumBinary = (arr, targetNum) => {
   let left = 0;
   let right = arr.length - 1;

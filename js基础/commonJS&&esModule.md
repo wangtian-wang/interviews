@@ -1,90 +1,59 @@
 ## commonJS
 
-     加载机制： require 同步加载
-     输出的    是当前模块的拷贝，会对加载结果进行缓存 一旦输出了某个值 模块内部的变化**不会影响**这个值
-        ```
-         var count = 0;
-         function add(a,b){
-             console.log( a + b)
-             count++;
-         }
-         module.exports= {add, count}
+**_require_**
 
-         let utils = require('./utils);
-         utils.add(1,2);
-         console.log(count) 0
-        ```
-     加载的文件类型： 运行时加载
-                   加载的是一个对象 该对象只有在脚本运行完才会生成
-     this指向    this指向模块本身
-     导出 module.exports
+1. 运行时加载,同步加载,阻塞当前文件的 js 代码执行
+2. 会在模块被第一次引入时,执行模块中的代码,并将结果缓存起来,实现多次加载,运行一次
+
+**_exports_**
+
+- 是一个对象,我们可以向这个对象里面添加很多属性
+- 导出的是一个对象(原模块的拷贝(浅拷贝)), 若对象的属性被属性,则所有地方都会被修改
+
+**_module.exports 和 exports 的关系_**
+
+1. node 中使用 module 类 ,来实现模块的导出,每一个导出的模块都是 module 的实例
+2. 在 node 中真正用于导出的是 module.exports
+3. module.exports = exports module.exports 对象 持有对 exports 对象的引用
 
 ## esModule
 
-    加载机制：  import 动态加载  浏览器原生支持
-    输出的是    当前模块的一个引用 即使输出了某个值 模块内部的变化**也会影响** 这个值
-           ```
-         var count = 0;
-         function add(a,b){
-             console.log( a + b)
-             count++;
-         }
-         module.exports= {add, count}
+**_import_**
 
-         let utils = require('./utils);
-         utils.add(1,2);
-         console.log(count) 1
-        ```
-    加载的文件类型： 编译时输出模块之间的依赖关系
-                  对外接口是一种模块依赖关系 在代码静态解析阶段就会生产
-    this指向    this指向undefined
-    导出 ：默认导出和按需导出
+1. 是 编译时加载 JS 文件(静态解析),动态引用被加载的 js 的文件中的变量 ,并且是异步的
+2. 当 script 标签上面设置了 type=module 相当于在 script 标签上加了 async 属性
 
-## commonjs ESmodule 中 不同的导出 导出的都是啥？？？
+**_export_**
 
-- ESmodule 中
+- export 在导出一个变量时，js 引擎会解析这个语法，并且创建 **模块环境记录** （module environment record）；
+- **模块环境记录**会和变量进行 `绑定`（binding），并且这个绑定是实时的；
+- export 导出的是变量本身的**引用**,可以获取到绑定变量的最新值
 
-```js
- export const name = 'bob'
- 导出的是module对象
-    module: {
-        _esModule:true,
-        name: bob
-        symbol(symbol.toStringTag): Module
-    }
+使用 esmodule 将自动将采用严格模式
 
+```javascript
+1.js
+ var name = "xiaoming";
+setTimeout(() => {
+  name = "000000";
+  console.log(obj); // xia~~~~~~ obj的name属性被 2.js里面语句修改了
+}, 1000);
+const obj = { name: "hong" };
+export { name, obj };
 
- const name = 'bob'
- export default name = bob
- 导出的是module对象
-    module: {
-        _esModule:true,
-        default: 'bob',
-        name: bob
-        symbol(symbol.toStringTag): Module
-    }
+2.js
+   import {name, obj} from './1.js'
+    obj.name = 'xia~~~~~~'
+    setTimeout(() => {
+        console.log(name, '2.js')  // 报错 name已经被声明为常量 不能被修改
+    }, 1500);
 
 ```
 
-- commonjs 中
+## es module 与 commonjs 交互
 
-```js
-module.exports = obj;
-导出的是一个对象;
-{
-    children: [],
-    exports: {},
-    load:true,
-    parents:[]
-}
-```
-
-## 使用 es module 导出语法 使用 commonjs require 语法 ???
-
-- 使用 export 导出的变量 require 后，可以正常使用；
-- 使用 export default 导出变量 require 后 需要使用 default 属性 来获取 使用 export default 导出的变量
-
-## 使用 module.exports 导出 使用 import 引入 可以正常使用
+- 通常情况下, commonjs 不能加载 esmodule esmodule 必须经过静态分析,无法在加载的时候执行 js 代码 但是可以人为修改；
+- 通常情况下,esmodule 导出的 commonjs 可以正常使用,但还是要看具体的运行环境是否支持
 
 ## ESmodule 两种不同的导出方式的注意点
 

@@ -13,7 +13,7 @@ for forEach循环的差别
 + for of
     内部实现了迭代器规范
 
-foreach 循环 实现是多个立即执行函数包裹的代码体(for each 传入的回调函数会在闭包函数中执行) 若里面有异步函数 虽然时间相同 但是会同时执行  foreach 循环比较慢 foreach循环的缺点
+foreach 循环 是使用while循环实现的 若里面有异步函数 虽然时间相同 但是会同时执行  foreach 循环比较慢 foreach循环的缺点
  for ()循环
  for of 循环没有这个问题
  */
@@ -117,4 +117,36 @@ fn();
  20896  两万零八百九十六 
 */
 
-/** 一维数组转为树形结构数据 */
+/** mdn上面的for each的实现 */
+if (!Array.prototype.forEach) {
+  Array.prototype.forEach = function (callback, thisArg) {
+    var T, k;
+    if (this == null) {
+      throw new TypeError(" this is null or not defined");
+    }
+
+    var O = Object(this);
+
+    var len = O.length >>> 0;
+
+    if (typeof callback !== "function") {
+      throw new TypeError(callback + " is not a function");
+    }
+
+    if (arguments.length > 1) {
+      T = thisArg;
+    }
+
+    k = 0;
+
+    while (k < len) {
+      var kValue;
+
+      if (k in O) {
+        kValue = O[k];
+        callback.call(T, kValue, k, O);
+      }
+      k++;
+    }
+  };
+}

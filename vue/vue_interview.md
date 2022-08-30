@@ -317,3 +317,65 @@ createRouter.install = function(app){
    3. v-memo 配合v-for 避免数据变化时 不必要的vnode的创建
    4. 采用懒加载的方式
    5. vue-virtual-scroller 等虚拟滚动方案,只渲染视口的数据.
+
+#### Vue3中响应式数据如何进行依赖收集
+
+> vue3里面这部分功能的实现是通过 effect 和 proxy 来实现的,具体过程如下:
+>
+> 1: effect.run()会在最开始执行一次,生成一个全局的active effect 
+>
+> 2:  在proxy的get里面 ,触发track 
+>
+> 3: track里面当前的 active effect :会收集对应的属性  属性也会对effect收集
+>
+> 4: 当属性发生变化的时候 会找到对应的effect函数去执行
+
+#### vue3中被readonly代理过的对象,再使用reactive代理时,会被直接返回
+
+#### vue3 模板优化策略 ----- 靶向更新
+
+> ```js
+> 1: patchFlag 标识节点静态,动态属性
+> 
+> 2: blockTree 是以树为单位来收集的,收集当前节点的所有后代节点
+> 遇到v-if v-for 会将当前的节点作为一个block,收集dynamicChild,和跟节点一起形成一个树形嵌套的blockTree
+> 
+> 3: dynamicChild:[]收集动态节点,为不稳定的结构也创建block节点,实现blocktree
+>  响应式数据变化 ->更新dynamicChild
+> ```
+>
+> 
+
+#### 对于靶向更新的优化 ---- 静态提升
+
+>  静态的节点和属性会被缓存起来 避免反复创建造成的性能消耗
+>
+> 当静态节点过多时,会将静态节点 转换为字符串,缓存起来
+>
+> 内联函数会被缓存
+
+#### provide inject 组件的父子关系   patch中构建父子关系
+
+> provide的原理是在 父组件实例上面 挂载了一个provide属性, 通过object.create()等,定义了原型链的查找方向
+>
+> parent                                                    son:                                                                grandson
+>
+> provide('name', 'parent')                      provide('name', 'children')                             inject('name')
+>
+> ​								                          provide = parent.provide? Parent.provide : object.create(null)     
+
+####  vue的插槽
+
+>  插槽是啥
+>
+> 1: 调用h函数第三个参数为对象的时候, 会被看做插槽
+>
+> 2: 在template里面编写模板的时候, slot是官方定义的插槽的写法
+>
+> 本质: 插槽会被编译为函数 ,使用一个对象保存起来,里面存放着映射关系 渲染组件的时候 去映射表里面找到对应的函数 条用
+
+#### vue3重写数组方法的原因
+
+> 数组的push pop shift unshift splice ....等方法 会改变数组的长度  数组的长度 length属性发生变化,会调用proxy的set方法,
+>
+> includes ,indexOf等方法调用的执行过程 : 先将代理对象转化为原始对象 调用原始对象的includes方法,原始对象上面假若找不到 就需要去代理对象上面查找

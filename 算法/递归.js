@@ -24,16 +24,23 @@
  */
 
 /** 尾调用举例 */
+/**
+ * 
+ 斐波那契数列是一个数组, 输入n(数组下标),求 在数组中n位置的数字
+ [1，1，2，3，5，8，13，21，34，55，89，144，233] 这是正确的数组,自己求解的数组,求出的结果要符合这个正确数组
+ */
 function factorial(n, total) {
   if (n === 1) {
     return total;
   }
   return factorial(n - 1, n * total);
 }
+console.log(factorial(8, 0));
 function fibonacci(n, n1 = 1, n2 = 1) {
   if (n <= 2) return n2;
   return fibonacci(n - 1, n2, n1 + n2);
 }
+console.log(fibonacci(8), "fibonacci");
 
 /**递归案例       */
 const arr = [12, 90, 100, 34, 23, 29, 30, 8];
