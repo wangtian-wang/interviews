@@ -1,3 +1,4 @@
+// 给定一个数字和一个有序数组,插入数字到指定位置
 const arr = [1, 3, 5, 6]; //2
 function search(arr, target) {
   if (arr[arr.length - 1] < target) return arr.length;
@@ -15,7 +16,6 @@ function search2(arr, target) {
     middle;
   while (left <= right) {
     middle = Math.floor((left + right) / 2);
-    console.log(middle, "--");
     if (arr[middle] == target) {
       return middle;
     } else if (arr[middle] < target) {
@@ -23,7 +23,6 @@ function search2(arr, target) {
     } else {
       right = middle - 1;
     }
-    console.log(left);
   }
   return left;
 }

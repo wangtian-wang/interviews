@@ -81,10 +81,10 @@ const deepClone = (target, hashMap = new WeakMap()) => {
   }
   return result;
 };
-const rs = deepClone(testObj);
-console.log(rs === testObj);
-rs.wife.age = "30";
-console.log(rs);
+// const rs = deepClone(testObj);
+// console.log(rs === testObj);
+// rs.wife.age = "30";
+// console.log(rs);
 
 // 实现深浅拷贝的可选
 const clone = (target, deep = false, cache = new WeakMap()) => {

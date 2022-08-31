@@ -82,6 +82,39 @@ new Promise((res, rej) => {
 })
 ```
 
+## 中断 promise promise 无法终止
+
+#### promise 虽然被中断了,但是 promise 没有终止,网络请求依旧会返回,只是我们不关心请求返回的结果了
+
+```javascript
+promise.race 保存状态最先改变的那个promise的结果,作为返回的promise的状态
+promise.race中 p1是request ,状态改变需要5000毫秒 p2的状态是pending的, 可以人为控制这个状态
+当request执行时间5000 毫秒时, 我不想等5000毫秒 可以手动决定 promise.race[p1,p2]返回的promise的状态为reject
+
+function request() {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve("success");
+          }, 5000);
+        });
+      }
+      function abortWrapper(p1) {
+        let abort;
+        // 这个p2的状态是pending 的
+        let p2 = new Promise((resolve, reject) => {
+          abort = reject;
+        });
+        let p = Promise.race([p1, p2]);
+        p.abort = abort;
+        return p;
+      }
+      const req = abortWrapper(request());
+      req.then((res) => console.log(res)).catch((e) => console.log(e, 'in reject '));
+      setTimeout(() => {
+        req.abort("stop---"); // 手动将p2的状态变为reject
+      }, 2000);
+```
+
 ## 失败的 promise.reject()
 
 ```js
@@ -334,13 +367,13 @@ console.log("macro task");
 1: 代码执行遇到外层第一个.then 加入微任务队列,此时因为第一个.then 还没有执行,所以代码暂时执行不到外层第二个.then 暂时先不看这个.then
 
     2: 代码从上往下执行,输出macro task
-    
+
     3: 然后去微任务队列里面执行任务, 代码开始执行.then的回调函数then1, 发现 函数内部又开启了一个微任务then2, 于是将then2加入到微任务队列 then3先不看 此时微任务队列里面只有.then
-    
+
     4: 继续清空微任务队列, 发现只有.then2 执行.then2 函数, 输出 1 此时.then3 被加入微任务队列
-    
+
     5: 继续清空微任务队列,发现只有.then3, 执行.then3函数, 输出2  此时 第一个外层的.then函数执行完毕, 可以执行第二个.then
-    
+
     6: 重复上述步骤,直到微任务运行完成
 
 但是以上结论只有在微任务嵌套的层级为 2 级的时候,假设给.then2 里面嵌套在多一层 promise.resolve 的结构,打印的结果会和以上分析思路有出入.
@@ -400,19 +433,16 @@ let btn = document.getElementById("btn");
 
 ## Promise.all 和 Promise.allSettled()的区别
 
-#### 	promise.all 
+#### promise.all
 
-​			1: promise.all 接收一个数组,每个数组项都是promise, 当所有的数组项的状态为resolve的时候,返回的promise实例的状态为成功
+    1: promise.all 接收一个数组,每个数组项都是promise, 当所有的数组项的状态为resolve的时候,返回的promise实例的状态为成功
 
-​			否则,返回的promise的状态为reject,并且reject的是第一个抛出错误的信息
+    否则,返回的promise的状态为reject,并且reject的是第一个抛出错误的信息
 
-​			2: 若传入的是空数组,会返回成功状态的promise实例
+    2: 若传入的是空数组,会返回成功状态的promise实例
 
-​	promise.allSettled
+    promise.allSettled
 
-​		  1:  接收一个数组,每个数组项都是promise,返回一个<font color="red">成功状态</font>promise的实例,并且带有一个对象数组,收集的是每个数组项的执行结果无论是成功或是失败
+    1:  接收一个数组,每个数组项都是promise,返回一个`<font color="red">`成功状态 `</font>`promise的实例,并且带有一个对象数组,收集的是每个数组项的执行结果无论是成功或是失败
 
-​		  2: 若传入的是空数组,会返回成功状态的promise实例
-
-​				
-
+    2: 若传入的是空数组,会返回成功状态的promise实例

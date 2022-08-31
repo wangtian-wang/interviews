@@ -18,7 +18,25 @@ function quickSort(arr) {
 
   return quickSort(left).concat([middle], quickSort(right));
 }
-let arr = [86, 24, 64, 48, 15, 30, 90, 49];
+
+/**   插入排序  */
+
+const insertSort = (arr) => {
+  if (arr.length <= 1) return arr;
+  for (let i = 1; i < arr.length; i++) {
+    let j = i - 1,
+      cur = arr[i];
+    while (j >= 0 && arr[j] > cur) {
+      arr[j + 1] = arr[j];
+      arr[j] = cur;
+      j = j - 1;
+    }
+  }
+  return arr;
+};
+
+let arr = [86, 24, 64, 48];
+console.log(insertSort(arr, "---"));
 // console.log(quickSort(arr), "-----------");
 // let res = arr.splice(3, 1)[0];
 
@@ -73,6 +91,3 @@ let arr = [86, 24, 64, 48, 15, 30, 90, 49];
 // arr1 = arr1.join("");
 // let s = arr1 + "4";
 // let f = arr1.join();
-let arr1 = [1, 2, 8];
-let d = arr1 + 4;
-console.log(d, "----");
