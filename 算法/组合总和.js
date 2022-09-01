@@ -1,4 +1,5 @@
 const combanationSum = (arr, target) => {
+  if (!target) return;
   const res = [],
     path = [];
   arr.sort((a, b) => a - b);
