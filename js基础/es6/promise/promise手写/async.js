@@ -68,6 +68,7 @@ function wrap() {
     go();
   });
 }
+const g = gen();
 wrap().then((res) => {
   console.log(res, "finally log");
 });
