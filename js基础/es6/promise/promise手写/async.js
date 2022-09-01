@@ -30,7 +30,7 @@ function* gen() {
     res = g.next(res.value);
 
     //  但是 res是个promise 需要使用.then的方法 拿出resolve的data
-    res.value.then((data) => res = g.next(data))
+    res.value.then((data) => res = g.next(data))   // 本质上是await promise的过程
     // 需要人工执行执行多次才能将gen函数内部的代码执行完成
     请看下面的代码 ⬇️
    
