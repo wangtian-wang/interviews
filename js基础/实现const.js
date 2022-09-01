@@ -5,18 +5,20 @@
 /**利用es5 实现一个const */
 const _const = (key, val) => {
   window.key = val;
-  Object.defineProperties(window, key, {
+  Object.defineProperty(window, key, {
     enumerable: false,
     configurable: false,
     get() {
-      return value;
+      return val;
     },
     set() {
       throw new TypeError("Assigment to constant variable is not allowed");
     },
   });
 };
+const a = _const("a", 10);
 
+console.log(a, "----");
 /**利用es5 实现一个let */
 (function () {
   var number = 123;
