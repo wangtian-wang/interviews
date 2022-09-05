@@ -50,16 +50,18 @@ const testObj = {
     height: 168 + "cm",
   },
   date: new Date(),
-  fn() {},
+  fn: function () {},
   bigNum: Infinity,
   arr: [1, 2, 3, 4],
 };
-// testObj.obj = testObj; 循环引用
+testObj.obj = testObj;
+//循环引用;
 
-// new WeakMap() 解决循环引用
-//  递归拷贝对象的时候 已经处理过的对象 会直接返回拷贝的对象的所有属性 不再递归的执行程序
+// new WeakMap() 解决循环引用  map的key是对象, value为对key 的拷贝
+//  递归拷贝对象的时候 会先从map里面寻找 key是都已经被拷贝 会直接从map里面拿出key的拷贝    不再递归的执行程序
 const deepClone = (target, hashMap = new WeakMap()) => {
   if (target == undefined || typeof target !== "object") {
+    console.log(target, "-----");
     return target;
   }
   if (target instanceof RegExp) {
@@ -68,7 +70,6 @@ const deepClone = (target, hashMap = new WeakMap()) => {
   if (target instanceof Date) {
     return new Date(target);
   }
-
   if (hashMap.get(target)) {
     return hashMap.get(target);
   }
@@ -82,9 +83,9 @@ const deepClone = (target, hashMap = new WeakMap()) => {
   return result;
 };
 // const rs = deepClone(testObj);
-// console.log(rs === testObj);
-// rs.wife.age = "30";
-// console.log(rs);
+// console.log(rs, "as before");
+// testObj.fn = function num() {};
+// console.log(rs, "rs after");
 
 // 实现深浅拷贝的可选
 const clone = (target, deep = false, cache = new WeakMap()) => {
@@ -166,3 +167,7 @@ function deepClone2(obj, hash = new WeakMap()) {
   hash.set(obj, res);
   return res;
 }
+const rs = clone(testObj);
+console.log(rs, "as before");
+testObj.fn = function num() {};
+console.log(rs, "rs after");
