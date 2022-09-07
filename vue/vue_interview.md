@@ -64,13 +64,42 @@
 >
 > extend 扩展单个对象
 
-#### 在 vue3 中,使用了 composition API 可以很好的解决这些问题
+#### 修饰符的实现原理
+
+> 事件修饰符 stop prevent self 等 主要靠的是模板编译原理
+>
+> capture once passive 等编译的时候增加标识
+
+#### 自定义指令
+
+> 用户设置好对应的钩子函数,当元素在不同的状态时 会依次调用对应的钩子
 
 #### 你使用过 vue extends 扩展过组件吗?
 
 #### mixins 的原理你了解吗?
 
-## 权限管理
+> 当我们使用 Vue.mixin()时 会传入一个 option,Vue.options= mergeOption(全局 options,用户传入的 option,)
+>
+> initMixin 的时候, 会给当前实例增加$options 属性,值为实例化传进来的 option 和 vue.options 的合并
+
+#### $set 原理
+
+```js
+ $set(obj,key,value)
+ 找到对象上面的dep属性, 调用dep的notify 去更新对象
+```
+
+## 持久化登录
+
+> 1: store 里面封装公共的登录方法
+>
+> 2: 登录页面调用 store 里面的公共方法,并将 token 等信息存储到 localStorage 里面
+>
+> 3: 在 router 的路由守卫里面 执行一下操作
+>
+> a: 检查 local 里面有无 token,若没有直接跳到登录页面
+>
+> b: 将本地存储的 token 设置到 请求头中 让服务端验证, 返回最新结果 存储起来
 
 ## 实现一个 vuex 的思路
 
@@ -232,11 +261,15 @@ createRouter.install = function(app){
    1. #### watch
 
       1. 侦听某个响应式数据的变化,执行一些操作 包括异步的操作
+      2. 原理
+         > 是用户传入的 watcher, 基于 watcher 类, 当监听的数据发生变化时候,执行用户传入的回调.
 
    2. #### computed
 
       1. 简化行内模板中的复杂表达式
       2. 特点: 具有缓存性;懒执行;可以传递对象变为即可读,又可以写的属性
+      3. 原理
+         > computed 本质上是一个带有 dirty:true; lazy:true 属性的 watcher, 默认 computed 传入的回调函数不执行,只有当属性在模板中使用后,执行 callback, 会将 dirty 标记为 false,将 callback 的执行结果缓存起来 ,当 computed 的依赖项没发生变化时 ,直接返回缓存结果.依赖项变化, dirty 标记为 false,访问时会执行 callback.
 
 2. #### 追问: watch 和 watchEffect 的区别??
 
@@ -315,6 +348,12 @@ createRouter.install = function(app){
    4. 采用懒加载的方式
    5. vue-virtual-scroller 等虚拟滚动方案,只渲染视口的数据.
 
+#### Vue2 中进行依赖收集
+
+> 1: 依赖收集才用了观察者模式 被观察者指的是数据(dep), 观察者是 watcher(渲染 watcher, 计算 watcher,用户 watcher)
+>
+> 2: 一个 watcher 对应多个 dep, 一个 dep 对应多个 watcher 默认渲染的时候会进行依赖收集,数据更新了找到对应的 watcher 去触发更新
+
 #### Vue3 中响应式数据如何进行依赖收集
 
 > vue3 里面这部分功能的实现是通过 effect 和 proxy 来实现的,具体过程如下:
@@ -368,6 +407,12 @@ createRouter.install = function(app){
 > 2: 在 template 里面编写模板的时候, slot 是官方定义的插槽的写法
 >
 > 本质: 插槽会被编译为函数 ,使用一个对象保存起来,里面存放着映射关系 渲染组件的时候 去映射表里面找到对应的函数调用
+
+#### Vue2 如何检测数组变化
+
+> 数组并没有使用 `defineProperty`进行代理, 因为通过数组索引修改数组的情况不多,假设直接使用 `defineProperty` 会浪费性能
+>
+> vue2 才用了重写数组的变异方法来实现, 对于定义在 data 中的数组进行原型链修改,后续调用的方法都是重写后的方法, 假设数组元素是对象, 这个对象也会被代理
 
 #### vue3 重写数组方法的原因
 
