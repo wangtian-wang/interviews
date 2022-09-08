@@ -128,11 +128,14 @@
 
 1. #### vue-router 解决的问题是啥?
 
-   > Spa 应用的路由需要解决的是 页面跳转,内容改变 但是页面不刷新
+   > Spa 应用的路由需要解决的是 页面跳转,加载响应的内容,但是页面不刷新
 
 2. #### vue-router 的实现原理
 
-   > hash / history API
+   > hash | history API
+   > router.push
+   > router.go
+   > router.replace
    >
    > 监听 hashchange| popstate 事件处理跳转
    >
@@ -141,6 +144,37 @@
 3. #### vue-router 加载组件的原理
 
    > 使用 jsonp 来加载当前路由对应的组件
+
+4. ##### 模式
+
+   ```js
+    hash         监听hashchange事件, 通过location.hash 实现路由跳转
+
+    history      监听 popstate 事件 history.pushState 实现路由跳转
+   ```
+
+5. ##### 区别
+
+   > hash
+
+   ```js
+   url参数 -> hash 只能添加字符串类型的数据
+   历史记录 -> hash 后面的内容不会显示
+   部署    ->  兼容性好,无需后台配置
+
+   ```
+
+6. > history
+
+   ```js
+   url参数 -> history 添加多重类型的数据
+   历史记录 -> history 的每条记录都会添加到历史记录里面
+   部署    ->  需要后台配合 ,当发出的请求匹配不到对应的资源时 需要返回index.html资源
+   ```
+
+7. ##### popState
+
+   > 触发时机: 点击浏览器的前进后退按钮 或者调用 history.back() 或者 history.forward()
 
 ##### 4:router-link 和 router-view 的实现原理
 
