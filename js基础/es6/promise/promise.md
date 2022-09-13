@@ -341,6 +341,7 @@ limitPromise(taskArray, handlerPromise, 3);
 resolve 方法会将实参包装为一个 promise 对象
 
 ```javascript
+// 类似于这种嵌套的promise.resolve(), 只有第一个then当中第一个promise.resolve.then的回调会立即执行
 Promise.resolve()
   .then(function then1() {
     Promise.resolve()
@@ -361,6 +362,7 @@ Promise.resolve()
       });
   });
 console.log("macro task");
+// macro task , 1 ,2 ,then4 , last~~~~
 ```
 
 代码执行步骤外层的两个.then 为一个实例,所以第一个.then 执行完成的状态决定 外层第二个.then 执行的状态
@@ -446,3 +448,55 @@ let btn = document.getElementById("btn");
     1:  接收一个数组,每个数组项都是promise,返回一个`<font color="red">`成功状态 `</font>`promise的实例,并且带有一个对象数组,收集的是每个数组项的执行结果无论是成功或是失败
 
     2: 若传入的是空数组,会返回成功状态的promise实例
+
+#### return Promise 和 return await promise 的区别
+
+```js
+const fn = () => {
+  return new Promise((resolve, reject) => {
+    resolve("exec 1");
+  });
+};
+const exec = async () => {
+  let res = await fn();
+  console.log(typeof res, "----"); // 'exec 1'
+  return res;
+};
+let res = exec().then((result) => {
+  console.log(result, "in exec then"); // 'exec 1'
+});
+console.log(res); // promise<pending>
+```
+
+1. return promise 得到的 promise 是有状态为 fulfill 或者 reject
+2. return await promise 得到是一个 promise `<pending>状态的promise, 可以使用.then调用`
+
+#### Promise 代码的执行结果
+
+```js
+
+Promise.resolve(console.log(0))
+  .then1(() => {
+    console.log(1);
+    Promise.resolve(console.log(5))
+      .then11(() => console.log(3))
+      .then22(() => console.log(4))
+      .then33(() => console.log(6));
+  })
+  .then2(() => console.log(2))
+  .then3(() => console.log(7));
+// 0 1 5 3 2 4 7 6
+
+代码的执行过程
+      同步队列                         微任务队列
+console.log(0)
+ 遇见then1,加入微任务队列           then1
+ 同步队列无可执行代码,执行微任务          console.log(1),执行完,遇见promise.resolve,属于同步任务,加入同步队列
+ console.log(5)执行完成, 此时then2的状态为fulfill,代码往下执行
+ 遇见then11,加入微任务队列          then11
+ then2加入微任务队列               then2
+ 同步无任务清空微任务队列            依次执行 then11, 将then22加入微任务队列,执行then2 将then3加入队列; then22, then3待执行
+清空微任务队列                     依次执行 then22, 将then33加入微任务队列,执行then3   , then33待执行
+
+
+```
