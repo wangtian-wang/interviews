@@ -3,17 +3,17 @@ function test(
   x,
   y = function () {
     x = 3;
-    console.log(x); // 2 : 3
+    console.log(x); // 3
   }
 ) {
-  console.log(x); // 1: 1000
+  console.log(x); // undefined
   y();
-  console.log(x); // 3: 1000
+  console.log(x); // 3
   x = 22;
-  console.log(x); // 4: 22
+  console.log(x); // 22
 }
 test();
-console.log(x); // 5: 10
+console.log(x); //  10
 
 /**
  函数的参数 算是单独的作用域， 修改函数参数作用域内的变量， 不会对函数内部的同名变量产生影响  ； 函数参数作用域内   没有的变量 向全局去查找；
