@@ -73,6 +73,18 @@
       console.log(Function.prototype);
       const p = {};
       console.log(p.constructor === Object);
+
+      function compose(fnArrays) {
+        return (initValue) =>
+          fnArrays.reduceRight((prev, cur) => cur(prev), initValue);
+      }
+      function asyncComponent(fnArrays) {
+        return (initValue) =>
+          fnArrays.reduceRight(
+            (prev, cur) => prev.then((res) => cur(res)),
+            Promise.resolve(Infinity)
+          );
+      }
     </script>
     <!--  
     程序啥时候 会清空微任务队列 Promise.resolve()的then的优先级高 ??
