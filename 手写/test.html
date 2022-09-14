@@ -8,7 +8,7 @@
   </head>
   <body>
     <!-- <script src="./区间合并.js"></script> -->
-    <script src="./deepClone.js" type="text/javascript"></script>
+    <!-- <script src="./call.apply.bind.js" type="text/javascript"></script> -->
 
     <!-- <script type="text/javascript">
       let arr = [86, 24, 64, 48];
@@ -27,5 +27,56 @@
       }
       console.log(insertSort(arr));
     </script> -->
+    <script>
+      //   Promise.resolve(console.log(0))
+      //     .then(() => {
+      //       console.log(1);
+      //       Promise.resolve(console.log(5))
+      //         .then(() => console.log(3))
+      //         .then(() => console.log(4))
+      //         .then(() => console.log(6));
+      //     })
+      //     .then(() => console.log(2))
+      //     .then(() => console.log(7));
+      // 类似于这种嵌套的promise.resolve() 只有第一个promise.resolve.then的回调会立即执行
+      //   Promise.resolve()
+      //     .then(() => {
+      //       Promise.resolve(
+      //         Promise.resolve("0000").then((res) => {
+      //           console.log(res);
+      //         })
+      //       )
+      //         .then(() => {
+      //           console.log(1);
+      //         })
+      //         .then(() => {
+      //           console.log(2);
+      //         });
+      //     })
+      //     .then((l) => {
+      //       console.log("lallalal");
+      //       Promise.resolve()
+      //         .then((res) => {
+      //           console.log(3);
+      //         })
+      //         .then(() => {
+      //           console.log("4");
+      //         });
+      //     });
+      function P() {}
+      function C() {
+        P.call(this);
+      }
+      C.prototype = new P();
+      C.prototype.constructor = C;
+      const c = new C();
+      console.log(Function.prototype);
+      const p = {};
+      console.log(p.constructor === Object);
+    </script>
+    <!--  
+    程序啥时候 会清空微任务队列 Promise.resolve()的then的优先级高 ??
+    还是说当调用栈里面没有可执行的代码时 promise.resolve.then 的优先级高呢?
+    -->
   </body>
 </html>

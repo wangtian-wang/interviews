@@ -2,8 +2,8 @@
 node_modules
 /dist
 **/node_modules
-
-
+/**/test.html
+/手写/*.html
 
 
 # local env files
