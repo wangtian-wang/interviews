@@ -274,7 +274,7 @@ createRouter.install = function(app){
 ## vue 中 key 的作用是啥?
 
 1. 为了高效的更新虚拟 DOM
-2. 在 vue 的 diff 算法中,使用 key 和节点类型来比较两个节点是否相同,如果不设置 key,vue 使用的算法是 , 减少 DOM 的移动, 尽可能多的原地 patch 或者 reuse 相同 type 的 dom, 有 key 的话, 根据元素的 key 重新排序,移除那些没有 key 的元素.
+2. 在 vue 的 diff 算法中,使用 key 和节点类型来比较两个节点是否相同,如果不设置 key,vue 使用的算法是 , 减少 DOM 的移动, 尽可能多的原地 patch 或者 reuse 相同 type 的 dom, 有 key 的话, 根据元素的 key 重新排序,移除那些之前有 key,更新后没有 key 的元素.
 3. 在实际开发中应该避免使用数组索引作为 key,会导致一些渲染问题
 4. 使用相同标签元素过渡切换时,也会使用 key,为了让 vue 可以区分他们,否则 vue 只会替换内部属性,不会触发过渡效果.
 5. 触发组件的生命周期在恰当的时候
