@@ -23,8 +23,9 @@ const insertSort = (arr) => {
   for (let i = 1; i < arr.length; i++) {
     let j = i - 1,
       cur = arr[i];
+    // 因为j是变化的 所以 不能直接写成 jItem = arr[j]
     while (j >= 0 && arr[j] > cur) {
-      arr[j + 1] = arr[j];
+      arr[j + 1] = arr[j]; //  前一项的较大的值 赋值给后一项后, 再去更改前一项的值
       arr[j] = cur;
       j = j - 1;
     }
