@@ -1,29 +1,38 @@
 /**
- 注意点： 当浏览器进入后台运行时， 定时器会暂停执行； 暂停的时间各个浏览器的标准不同
-  setInterval()的缺点
-   setInterval()里面设定的毫秒数 并不一定是按照设定的时间去执行
+ 注意点： 
+ 
+   1:当浏览器进入后台运行时，被激活的tab的定时最小延迟 >= 1000ms 定时器会暂停执行； 暂停的时间各个浏览器的标准不同
+   2:在同一个全局对象(window,worker)里面,公共一个id池
+   3: 最大延时 为24.8天,超出最大延时,定时器就会被立即执行 -> 浏览器内部以32位带符号的整数存储延时.
+
+   setInterval()
+   缺点
+        做不到按照设置的时间间隔,去准确的执行任务
+   原因:
+    并不一定是按照设定的间隔时间去执行回调, 而是按照间隔时间,间隔回调任务加入到任务队列里面,
+   
+   但是执行栈每次只能执行一个任务,因此导致了时间间隔不准确,
+
+   关于定时器的延迟时间
+
+   1:  最小延时>=4ms ,由于回调里面的任务耗时,或者是函数嵌套,导致实际的延迟时间会比期待的时间长
+
+   2:  
+
+
 
    原因：
      1： 当前任务队列里面只要有定时器代码 那么新的定时器代码不会被添加到队列里面；
      2： 多个定时器代码会连续执行；
      3： 对于定时器的回调代码 等到定时时间到了后 才会被加入回调队列；
 
-    setTimeou（）的特点：
-    原因： 
-        1： 产生的任务直接push到回调队列 不检查。
+    setTimeout（）的特点：
+     按照延迟时间,只执行一次将回调函数 加入任务队列的操作
+ 
 
     当前文件夹下面的定时器图片 是定时器加入任务队列的详细图解
 
-  如何解决
-      使用setTimeout() + 递归
-  为啥使用setTimeout()就能解决呢？
-      setTimeout（）当代码
-          自己总结的 ： 代码运行遇到了setTimeout()会先将这个timeout函数
-                加入到 任务队列 等到 当前执行栈没有任务的时候 将任务队列里面的 timeout函数推入执行栈 等到了delay time 执行回调函数
-                但如果同一时间向任务队列里面推入了好几个定时器 并且这些定时器的触发事件都相同 那么 等到执行栈中的同步任务清空了 这个定时器 就会全部执行
-          这个是蛋蛋老师说的 ：    是到达时间后才执行，运行完一次之后，进行 延迟，再  触发  下一个任务   触发 ： 延迟时间到了后 才在任务队列里面添加任务
-          是时间到了后 才加入到任务队列呢？？？
- */
+
 /*  setInterval() 实现的弊端            */
 const fn = () => {
   console.log('new interval peer 1"s print');
@@ -37,15 +46,33 @@ function Interval(fn) {
   }, 1000);
 }
 Interval();
-/*  setTimeout() 实现            */
+/*  setTimeout() 实现    不正确版本        */
 function newInterval(fn, millisecond) {
   function inside() {
     fn();
     setTimeout(inside, millisecond);
   }
-  inside();
+  inside(); // fn 没有加入异步回调,而是同步执行的
 }
 newInterval(fn, 1000);
+
+/*  setTimeout() 实现    正确版本        */
+function interval(fn, seconds, time = 5) {
+  let count = 1;
+  function inside() {
+    if (count <= time) {
+      fn();
+      setTimeout(inside, seconds); // 模拟递归 间隔执行fn
+      count++;
+    }
+  }
+  setTimeout(inside, seconds); // 将fn的执行加入异步队列
+}
+function print() {
+  console.log(" interval test");
+}
+interval(print, 500);
+
 /*  setTimeout() 实现一个可以控制重复次数的循环器 */
 /**
  *
