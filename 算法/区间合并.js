@@ -9,34 +9,31 @@ let arr = [
 // 时间 空间复杂度
 function mergeRange(arr) {
   let result = [];
-  //   arr.sort((a, b) => a[0] - b[0]);
+  arr.sort((a, b) => a[0] - b[0]);
+  // 确定一个初始区间
   let start = arr[0][0];
   let end = arr[0][1];
   for (let i = 1; i < arr.length; i++) {
+    // 当前区间的最小值 大于上一个区间的最大值 ,最小值 最大值 都需要更新
     if (arr[i][0] > end) {
       // 无区间重合,挪动start end指针
       result.push([start, end]);
       start = arr[i][0];
       end = arr[i][1];
     } else {
-      console.log(arr[i]);
       end = Math.max(end, arr[i][1]); // 有区间重合的地方 算出区间最大值
     }
   }
 
-  result.push([start, end]);
+  result.push([start, end]); // 最后一组区间记得收集
 
   return result;
 }
-console.log(
-  mergeRange([
-    [1, 4],
-    [4, 5],
-  ])
-);
+
 var merge = function (intervals) {
   //对于左边界从小到大排序
   intervals.sort((a, b) => a[0] - b[0]);
+
   const result = [];
   let prev = intervals[0];
   //合并重叠区间
@@ -53,3 +50,4 @@ var merge = function (intervals) {
   result.push(prev);
   return result;
 };
+console.log(mergeRange(arr));
