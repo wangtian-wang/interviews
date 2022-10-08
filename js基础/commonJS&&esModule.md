@@ -9,37 +9,63 @@
 **_require_**
 
 1. 运行时加载,同步加载,阻塞当前文件的 js 代码执行
-2. 会在模块被第一次引入时,执行模块中的代码,并将结果缓存起来,实现多次加载,运行一次
+2. 会在模块被第一次引入时,先将模块加入缓存,再执行模块中的代码,并将结果缓存起来,实现多次加载,执行一次
 
 **_exports_**
 
 - 是一个对象,我们可以向这个对象里面添加很多属性
-- 导出的是一个对象(原模块的拷贝(浅拷贝)), 若对象的属性被属性,则所有地方都会被修改
+- 导出的是一份值的拷贝,放在新的内存中,每次直接在新内存中取值,所以对变量修改没法同步
 
 **_module.exports 和 exports 的关系_**
 
 1. node 中使用 module 类 ,来实现模块的导出,每一个导出的模块都是 module 的实例
-2. 在 node 中真正用于导出的是 module.exports
-3. module.exports = exports module.exports 对象 持有对 exports 对象的引用
+2. 在 node 中真正用于导出的是 ` module.exports` 是当前模块的 `值` 的拷贝
+3. module.exports = exports module.exports 对象 持有对 exports 对象的引用,但是不能直接赋值给 exports, 如 export= {}
 
-## esModule
+   ```js
+   exports.name = 'steven'
+   module.exports = { name: 'lucy'}
+   最终导出的是{ name: 'lucy'} 因为 exports对象的引用被重新赋值
+
+   module.exports = exports 或者 module.exports.name = 'steven'
+   最终导出的是{ name: 'steven'}
+   ```
+
+## module exports 的关系
+
+1: exports 记录了当前模块导出的变量
+
+2: module 记录了当前模块的详细信息
+
+## commonjs 模块查找规则
+
+1. 内置核心模块 node 内部将其编译为二进制代码,直接书写标识符 fs, http 即可
+2. 自己写的文件模块 需要使用相对路径引入 require 会将相对路径转化为真实路径, 找到模块
+3. 第三方模块, 会使用到 path 变量, 一次查找当前目录下的 node_modules 文件夹,假设没找到,会在父级目录查找,一直找到根目录,找到目录后,会以 package,json 中的 main 字段为准,找到包的入口文件,假设没有 main 字段,则查找 index.js/index.json/index.node
+
+## Commonjs 如何处理模块循环引用
+
+采取了模块缓存技术,每一个模块都先加入缓存再执行，每次遇到 require 都先检查缓存，这样就不会出现死循环；借助缓存，输出的值也很简单就能找到了。
+
+# esModule
 
 **_import_**
 
 1. 是 编译时加载 JS 文件(静态解析),动态引用被加载的 js 的文件中的变量 ,并且是异步的
 2. 当 script 标签上面设置了 type=module 相当于在 script 标签上加了 async 属性
+3. ES module 会根据 import 关系构建一棵 `依赖树`，遍历到树的叶子模块后，`然后根据依赖关系，反向找到父模块`，将 export/import 指向同一地址。
 
 **_export_**
 
 - export 导出的是变量本身的**引用**,可以获取到绑定变量的最新值
-- esmodule 规定必须导出一个接口,只有导出一个接口,才能被其他模块引用
+- esmodule 规定必须导出一个接口,只有导出一个接口,才能被其他模块引用; 每当使用时,根据地址找到对应的内存空间,实现了 所谓的动态绑定
 
 ```js
 - export 在导出一个变量时，js 引擎会解析这个语法，并且创建 `模块环境记录` （module environment record）；
 - **模块环境记录**会和变量进行 `绑定`（binding），并且这个绑定是实时的；
 ```
 
-使用 esmodule 将自动将采用严格模式
+**使用 esmodule 将自动将采用严格模式**
 
 ```javascript
 1.js
@@ -59,6 +85,14 @@ export { name, obj };
     }, 1500);
 
 ```
+
+## esmodule 如何实现动态绑定
+
+依赖模块地图和模块记录
+
+1. 模块地图模块间依赖关系的地图, 标记进入过的模块为获取中,所以循环引用时,不会再次进入,来解决循环引用问题
+2. 模块记录
+   模块身份证,记录者模块的详细信息,像内存地址,加载状态等,等到其他模块导入时,会做一个'连接'-根据模块记录,把导入的变量指向同一块内存,实现了 `动态绑定`
 
 ## es module 与 commonjs 交互
 
