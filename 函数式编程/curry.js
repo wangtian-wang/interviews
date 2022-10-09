@@ -25,3 +25,16 @@ let curryFn = curry(add);
 let curryExec1 = curryFn(1, 3)(3);
 let curryExec2 = curryFn(1)(2)(3);
 console.log(curryExec1, curryExec2);
+
+function curryPart(fn, arity = fn.length) {
+  return (function nextCurried(prevArgs) {
+    return function curried(nextArgs) {
+      const args = [...prevArgs, nextArgs];
+      if (args.length >= arity) {
+        return fn(...args);
+      } else {
+        return nextCurried(args);
+      }
+    };
+  })([]);
+}
