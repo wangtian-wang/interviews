@@ -36,9 +36,9 @@ function throttle(fn, delay) {
 }
 
 function throttleExecNow(fn, delay) {
-  let oldTime = 0;
+  let oldTime = delay || 1000;
   return function () {
-    let curTime = Date.now() / 1000;
+    let curTime = new Date().getTime();
     if (curTime - oldTime >= delay) {
       oldTime = curTime;
       fn.apply(this, arguments);
