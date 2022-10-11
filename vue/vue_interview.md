@@ -76,11 +76,17 @@
 
 #### 你使用过 vue extends 扩展过组件吗?
 
-#### mixins 的原理你了解吗?
+#### mixins 的原理
+
+全局混入
 
 > 当我们使用 Vue.mixin()时 会传入一个 option,Vue.options= mergeOption(全局 options,用户传入的 option,)
 >
-> initMixin 的时候, 会给当前实例增加$options 属性,值为实例化传进来的 option 和 vue.options 的合并
+> initMixin 的时候, 会给当前实例增加$options 属性,值为实例化传进来的 option 和 Vue.options 的合并
+
+局部混入
+
+> 会和 vue 的 option 里面的方法合并
 
 #### Mixin 和 Vuex 的区别？
 
@@ -105,8 +111,16 @@
 
 ```js
  $set(obj,key,value)
- 找到对象上面的dep属性, 调用dep的notify 去更新对象
+     Object.defineproperty只能对对象的属性劫持,所以vue2里面 为了让对象和数组本身实现依赖收集 就给
+ 数组和对象增加dep,为了添加不存在的属性的时候 能触发视图更新; 当调用$set的时候,会找到对象上面的dep属性,
+ 调用dep的notify 去更新对象.
 ```
+
+## Render and template
+
+> vue2 中
+>
+> Render 的优先级高于 template ; 没有 template render 使用 outerHtml 作为 template
 
 ## 持久化登录
 
@@ -476,6 +490,16 @@ createRouter.install = function(app){
 > 数组的 push pop shift unshift splice ....等方法 会改变数组的长度 数组的长度 length 属性发生变化,会调用 proxy 的 set 方法,
 >
 > includes ,indexOf 等方法调用的执行过程 : 先将代理对象转化为原始对象 调用原始对象的 includes 方法,原始对象上面假若找不到 就需要去代理对象上面查找
+
+#### new Vue
+
+> 初始化 事件 `$on` `$once`...
+>
+> 初始化 状态 `$set` `$delete`...
+>
+> 增加全局指令,过滤器,方法, mixin; 注册全局组件
+>
+> 建立更新机制 ; 执行 render 方法
 
 #### vue 模板编译的原理
 
