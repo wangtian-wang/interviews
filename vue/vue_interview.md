@@ -2,7 +2,9 @@
 
 1. 每个生命周期阶段可以做的事情
 2. setup 和 created 谁先执行?为什么?
+   1. setup > created > onMounted > mounted
 3. setup 中为啥没有 beforeCreate 和 created?
+   1. setup 的调用发生在组件 mounted 之前
 
 ## 双向绑定
 
@@ -371,6 +373,7 @@ createRouter.install = function(app){
 10. #### 子组件分割策略：较重的状态组件适合拆分,无状态的组件尽量不要拆分(组件实例消耗大)
 11. #### 服务端渲染/静态网站生成：SSR/SSG
 12. **减少响应式数据的生成,对于不需要展示在模板中的数据,可以使用 Objecet.freeze()**
+13. **单页面应用首屏加载缓慢 可采用 loading 动画 或者骨架屏**
 
 ## vue 组件为啥是单根节点
 

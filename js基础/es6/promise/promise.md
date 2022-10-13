@@ -341,9 +341,11 @@ limitPromise(taskArray, handlerPromise, 3);
 resolve 方法会将实参包装为一个 promise 对象
 
 ```javascript
-// 类似于这种嵌套的promise.resolve(), 只有第一个then当中第一个promise.resolve.then的回调会立即执行
+// 类似于这种嵌套的promise.resolve(), 只有第一个then当中第一个promise.resolve.then的回调会立即执行  promise.resolve()在微任务队列没有任务的时候 会立即执行,在微任务队列有任务的时候 必须等上一个任务先执行完成再执行
+
 Promise.resolve()
   .then(function then1() {
+    console.log(" is first exex");
     Promise.resolve()
       .then(function then2() {
         console.log(1);
@@ -353,6 +355,7 @@ Promise.resolve()
       });
   })
   .then(function then4() {
+    console.log("第一个promise的第二个回调");
     Promise.resolve("then4")
       .then((res) => {
         console.log(res);
