@@ -83,6 +83,7 @@ const chooseSort = (arr) => {
     i = 1,
     len = arr.length;
   while (i < len) {
+    // 每次i发生变化 就 初始化minIndex
     minIndex = i - 1;
     // 数组的遍历都是从下标为0的位置开始  表示从数组下标i处 开始 遍历剩余数组元素
     for (let j = i; j < len; j++) {
@@ -90,6 +91,7 @@ const chooseSort = (arr) => {
         minIndex = j;
       }
     }
+    // 内存循环查找到的minIndex 假设这个 minIndex有变化 则说明最小值发生变化
     if (minIndex !== i - 1) {
       let temp = arr[i - 1];
       arr[i - 1] = arr[minIndex];
