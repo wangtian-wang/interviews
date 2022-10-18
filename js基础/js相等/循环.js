@@ -107,16 +107,6 @@ fn();
 
 */
 
-/**版本号比较 */
-
-/**多维对象扁平化 */
-
-/**URL传参解析 */
-
-/** 阿拉伯数字转换为中文数字 并且加上单位   
- 20896  两万零八百九十六 
-*/
-
 /** mdn上面的for each的实现 */
 if (!Array.prototype.forEach) {
   Array.prototype.forEach = function (callback, thisArg) {
