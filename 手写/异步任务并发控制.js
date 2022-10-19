@@ -11,15 +11,32 @@ const delay = function delay(time) {
 /*    并发限制: 每个时刻执行的promise的数量是固定的                */
 /*    测试案例开始    getNum有可能返回成功的状态 也有可能返回失败的状态         */
 
+function getNum(time) {
+  return new Promise((resolve, reject) => {
+    const num = Math.random() * 0.5;
+    setTimeout(() => {
+      if (num > 0.4) {
+        resolve(num);
+      } else {
+        reject("failing");
+      }
+    }, time);
+  }).catch((error) => {
+    /**
+     * 重要的错误捕获机制
+     *      在catch的位置捕获了 reject的状态 getNum执行返回的promise的状态为成功的,
+     *      确保99行的 task()每次都能进到.then()的成功的回调,递归的执行run()方法,
+     *      确保promise.all的返回结果是成功的
+     */
+    console.log(error, ": catch error in promise.catch");
+  });
+}
 // function getNum(time) {
 //   return new Promise((resolve, reject) => {
-//     const num = Math.random() * 0.5;
+//     const num = Math.floor(Math.random() * 0.5);
 //     setTimeout(() => {
-//       if (num > 0.4) {
-//         resolve(num);
-//       } else {
-//         reject("failing");
-//       }
+//       console.log(" in settime out");
+//       resolve(num);
 //     }, time);
 //   }).catch((error) => {
 //     /**
@@ -28,20 +45,6 @@ const delay = function delay(time) {
 //     console.log(error, ": catch error in promise.catch");
 //   });
 // }
-function getNum(time) {
-  return new Promise((resolve, reject) => {
-    const num = Math.floor(Math.random() * 0.5);
-    setTimeout(() => {
-      console.log(" in settime out");
-      resolve(num);
-    }, time);
-  }).catch((error) => {
-    /**
-     *    在catch的位置捕获了 reject的状态 getNum执行返回的promise的状态为成功的,这也是为啥状态为reject的list[item],每次都能进到.then()的成功的回调,递归的执行run()方法,
-     */
-    console.log(error, ": catch error in promise.catch");
-  });
-}
 let tasks = [
   () => {
     return getNum(1000);
