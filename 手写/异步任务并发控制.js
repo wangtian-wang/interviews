@@ -1,8 +1,4 @@
-/**
-  并发限制: 每个时刻执行的promise的数量是固定的
- */
-
-/*    测试案例开始             */
+/** delay 函数 */
 const delay = function delay(time) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -10,15 +6,34 @@ const delay = function delay(time) {
     }, time);
   });
 };
+
+/************************************************************ */
+/*    并发限制: 每个时刻执行的promise的数量是固定的                */
+/*    测试案例开始    getNum有可能返回成功的状态 也有可能返回失败的状态         */
+
+// function getNum(time) {
+//   return new Promise((resolve, reject) => {
+//     const num = Math.random() * 0.5;
+//     setTimeout(() => {
+//       if (num > 0.4) {
+//         resolve(num);
+//       } else {
+//         reject("failing");
+//       }
+//     }, time);
+//   }).catch((error) => {
+//     /**
+//      *    在catch的位置捕获了 reject的状态 getNum执行返回的promise的状态为成功的,这也是为啥状态为reject的list[item],每次都能进到.then()的成功的回调,递归的执行run()方法,
+//      */
+//     console.log(error, ": catch error in promise.catch");
+//   });
+// }
 function getNum(time) {
   return new Promise((resolve, reject) => {
-    const num = Math.random() * 0.5;
+    const num = Math.floor(Math.random() * 0.5);
     setTimeout(() => {
-      if (num > 0.4) {
-        resolve(num);
-      } else {
-        reject("failing");
-      }
+      console.log(" in settime out");
+      resolve(num);
     }, time);
   }).catch((error) => {
     /**
@@ -79,6 +94,7 @@ function createRequest(tasks, pool) {
 
         let order_index = index,
           task = tasks[index++];
+        if (!task instanceof Promise) task = Promise.resolve(task);
         task()
           .then((res) => {
             result[order_index] = res;
@@ -91,6 +107,14 @@ function createRequest(tasks, pool) {
       run(); // 这个run函数一直在执行,执行这个函数 就可以将promises数组的item执行了
     });
   });
+  /**
+   * taskArray  这里面的promise的状态 决定最终promise.all的执行状态
+   *            tasklist[item]的状态受到list[item]执行状态的影响
+   *            result的状态必须等到 list的全部item自行完成
+   *            promise.all只是同时开启了两个队列,在这两个队列里面递归的执行list里面的任务
+   *   map的作用 : 只是开启了2个任务池, 前2个任务会被抛进任务池,
+   *   promise.all执行的时候, 会在前2个任务的.then里面 调用run()函数 用下一个函数来 代替最初的taskArray中的第一个位置的函数 循环执行
+   */
   return Promise.all(taskArray).then(() => result);
 }
 createRequest(tasks, 2).then((res) => {
@@ -143,6 +167,7 @@ function createRequestC(tasks, pool, callback) {
   tasks.forEachs((v) => taskQueue.pushTask(v));
 }
 
+/** 自己默写的 异步任务 并发数量控制 */
 function taskControl(limit, list) {
   if (!Array.isArray(list)) throw new TypeError("list must be an array");
   limit = +limit;
@@ -163,7 +188,6 @@ function taskControl(limit, list) {
         curTask().then(
           (res) => {
             result[index] = res;
-            console.log("lallalalla");
             run();
           },
           (error) => {
@@ -174,34 +198,8 @@ function taskControl(limit, list) {
       run();
     });
   });
-  /**
-   * taskList  这里面的promise的状态 决定最终promise.all的执行状态
-   *            tasklist[item]的状态受到list[item]执行状态的影响
-   *            result的状态必须等到 list的全部item自行完成
-   *            promise.all只是同时开启了两个队列,在这两个队列里面递归的执行list里面的任务
-   *
-   */
   return Promise.all(taskList).then((res) => result);
 }
 // taskControl(2, tasks).then((res) => {
 //   console.log("task control----", res);
 // });
-
-function test() {
-  //   return getNum(1000).then((res) => {
-  //     console.log(res, ": test~~~~");
-  //   });
-
-  return getNum(1000);
-}
-function test1() {
-  return Promise.reject("test1");
-}
-test().then(
-  (res) => {
-    console.log(res, ": success");
-  },
-  (error) => {
-    console.log(error, ": error");
-  }
-);
