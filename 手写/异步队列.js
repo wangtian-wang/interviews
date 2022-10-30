@@ -30,7 +30,7 @@ class TaskQueue {
     }
   }
 }
-// test
+// test   每多少秒 执行 n 个任务
 function createTask(i) {
   return () => {
     return new Promise((resolve, reject) => {
