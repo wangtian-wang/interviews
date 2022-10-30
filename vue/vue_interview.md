@@ -462,13 +462,23 @@ createRouter.install = function(app){
 
 #### provide inject 组件的父子关系 patch 中构建父子关系
 
-> provide 的原理是在 父组件实例上面 挂载了一个 provide 属性, 通过 object.create()等,定义了原型链的查找方向
+> provide 的原理:
 >
-> parent son: grandson
+> 默认当前组件继承了父组件的 provides; 当组件要提供自己的 provide 时,就使用父组件的 provide 作为 prototype,创建一个 provides 对象,放在当前的实例上面.
 >
-> provide('name', 'parent') provide('name', 'children') inject('name')
+> inject
 >
-> provide = parent.provide? Parent.provide : object.create(null)
+> 获取当前实例的 provides 或者 app.context 的 provides(假设当前组件是跟组件)
+
+```javascript
+object.create()等,定义了原型链的查找方向
+
+parent son: grandson
+
+provide('name', 'parent') provide('name', 'children') inject('name')
+
+provide = parent.provide? Parent.provide : object.create(null)
+```
 
 #### vue 的插槽
 
