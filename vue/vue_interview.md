@@ -490,6 +490,16 @@ provide = parent.provide? Parent.provide : object.create(null)
 >
 > 本质: 插槽会被编译为函数 ,使用一个对象保存起来,里面存放着映射关系 渲染组件的时候 去映射表里面找到对应的函数调用
 
+### vue2 object.definedProperty()
+
+- 缺点
+  - 只能代理对象的已存在属性, 不能代理后来添加的属性.
+  - 不能代理整个对象.当对象的属性较多时,需要使用递归进行处理.
+  - 只能拦截对象的 set get 操作,不能拦截 诸如 delete, in 等方法的操作.
+- vue 采取的解决办法
+  - 对于数组,重写了数组的 7 个方法,实现对响应式数据的支持.
+  - 使用 ` $set` `$delete` 来解决对象属性的添加或者删除操作.
+
 #### Vue2 如何检测数组变化
 
 > 数组并没有使用 `defineProperty`进行代理, 因为通过数组索引修改数组的情况不多,假设直接使用 `defineProperty`对索引进行劫持的话, 会浪费性能.
@@ -522,8 +532,130 @@ provide = parent.provide? Parent.provide : object.create(null)
 >
 > 2: 实现的具体函数是啥 具体步骤
 >
-> parse( ) 将 template 变为 ast.
+> parse( ) 使用大量的正则表达式, 将 template 进行解析,将指令,属性,等 变为 ast.
 >
-> optimize( ),对 ast 进行优化标记静态节点.
+> optimize( ), 遍历 ast, 对 ast 进行优化,标记 ast 中的静态节点.便于在 diff 时,直接跳过静态节点,进行框架性能优化.
 >
-> generator( ) 代码生成; 拼接 render 函数字符串 + new Function + with
+> generator( ) 代码生成; 拼接 生成 render 函数字符串 ;(new Function + with)
+
+### 为啥在 vue 中引入图片需要使用 require()
+
+> vue 项目在启动时,会整个项目打包,并且输出在当前文件的 dist 目录下,所有在 vue 项目中使用相对路径引入的静态的资源,会被 webpack 使用 require 加载进来,这样就能正确找到文件的路径; 假设不使用 require, 那动态加载的资源路径与图片资源被编译后的资源地址不一致.所以找不到文件.
+
+### vite 或者 webpack 中 alias 的原理是啥?
+
+#### v-if v-show 的实现原理
+
+- v-show 在 v2 v3 中的实现方式是一样的
+
+```js
+var show = {
+    bind(el){
+         el.style.display
+    }
+    update(){}
+    }
+ var platformDirectives = {
+    show: show,
+  };
+ extend(Vue.options.directives, platformDirectives);
+  // 将v-show注册为全局指令 挂在  Vue.options.directives = { v-model,v-show}上面
+
+```
+
+#### v-if
+
+- v-if 指令会删除或者新增加 dom 节点, 会改变 DOM 的结构,进而影响到 vue 的编译过程.
+
+```js
+// parse  convert html to ast
+function parse() {
+  parseHTML(template, {
+    start() {
+      processIf();
+    },
+  });
+}
+// v-if 的实现依靠模板编译和render函数
+// 在模板编译阶段 , 生成 ast 给当前的vnode上面挂载 ``if`` 属性, 值为表达式的值
+// 在render阶段 根据if属性来 来判断是否需要生成vnode
+条件为真, 开始编译DOM ,生成vnode ,动态appendChild,添加DOM, 否则: 动态移除DOM
+
+```
+
+#### 使用 v-for 时 需要使用事件代理吗?
+
+需要
+
+```js
+function add(target) {}
+/**
+ 源码中的add函数是处理事件添加的函数, target是参数, 函数内部的代码是给target添加事件.
+    当使用,事件代理的时候, target是父元素, 
+    当没有使用代理时, target为v - for循环生成的DOM;
+事件代理的好处 
+1: 因为只给 父元素添加事件处理函数,所以个数减少,所占用的内存也减少
+2: 动态增加的子节点,无需绑定事件, 父元素的事件委托作用于子元素
+注意: 不支持事件冒泡的事件,不适合使用事件委托.
+ */
+```
+
+#### 为啥 Vuex 的 Mutation 不能做异步操作
+
+- 为了方便调试
+  > 因为每个 mutation 执行完成后都会对应一个新的状态变更,devtools 就可以以快照的形式 将该变更保存下来,假设有异步的操作, 那没有办法知道状态何时变更,无法进行状态追踪,给调试带来困难.
+
+#### router-link 和 a 标签跳转的区别
+
+- 有 onclick 那就执行 onclick
+- click 的时候阻止 a 标签默认事件(这样子点击<a href="/abc">123</a>就 不会跳转和刷新页面)
+- 再取得跳转 href(即是 to)，用 history(前端路由两种方式之一，history & hash)跳转，此时只是链接变了，并没有刷新页面
+
+#### v-model 绑定 vuex 中的属性会有啥问题,以及如何解决
+
+- 确实会有问题,会收到来控制台的警告
+- 解决方法
+  - 1: ` <input type="text" v-model="$store.state.Root.value" />` 直接绑定
+  - 2: 将`v-model="exp"` 绑定的 exp 变为 计算属性,定义 get 和 set,set 的时候 直接调用 vuex 中定义的更改 exp 的方法.
+  - 3: 自己监听 input 事件,在事件中执行 store 的变更方法
+
+```js
+// xx.vue
+<template>
+    <input type="text" v-model="message" />
+    <input type="text" :value="msg" @input="updateMsg" />
+</template>
+export default {
+    computed: {
+        message: {
+            get(){
+                return this.$store.state.message
+            },
+            set(val){
+                this.$store.commit('updateMsg',val)
+            }
+        },
+        msg(){
+            return  this.$store.state.message
+        }
+    },
+    methods: {
+        updateMsg(val){
+            this.$store.commit('updateMsg',val)
+        }
+    }
+}
+// message.js
+
+export default {
+    state : {
+        message: 'xxx'
+    },
+    mutations: {
+        updateMsg(state,val){
+            state.message = val
+        }
+    },
+
+}
+```
