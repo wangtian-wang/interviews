@@ -111,6 +111,32 @@ export { name, obj };
 
 ```
 
+## 浏览器是怎样实现 esmodule 的
+
+- 浏览器实现 esmodule 的过程是一个异步加载的过程,实现 es6 模块的浏览器可以从顶级模块加载整个依赖图
+- 缺点:
+
+  虽然这种方式加载效率高,但是对于大型应用来说, 深度依赖加载的时间比较长
+
+- 加载过程举例:
+
+  ```js
+  mo// index.js
+
+  import A from './a.js';
+  import B from './b.js';
+  console.log(A)
+
+  // a.js
+   import C from './c.js'
+   import D from './d.js'
+
+  // 模块的加载过程
+
+  从index.js 入手, 先去加载A模块; 然后去加载B模块; A,B 模块的加载是先后执行的,是同步加载的
+  发现A模块依赖C,D,分别去加载C, D模块, 等C,D模块加载完成后才会执行被加载的模块中的代码.
+  ```
+
 ## CommonJS module 是啥？？
 
 ```js
