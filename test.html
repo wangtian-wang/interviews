@@ -4,189 +4,43 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <style>
-      .father {
-        color: black !important;
-        background-color: pink;
-        height: 100px;
-      }
-    </style>
+    <script src="./vue.js"></script>
   </head>
   <body>
-    <div class="father" style="color: yellowgreen">
-      father
-      <div
-        class="children"
-        style="background-color: powderblue; margin-top: 50px"
-      >
-        children
+    <div id="app"></div>
+    <template id="vueTemplate">
+      <div @click="handClick">
+        <p>i am p</p>
+        <div v-for="(item, index) in nums">hello ! {{item}}</div>
       </div>
-      <button id="btn">点击</button>
-      <button id="btn1">点击1</button>
-      <!-- <button id="btn2">点击</button>
-      <button id="btn3">点击</button> -->
-
-      <div
-        class="drop_container"
-        ondrop="handleDrop(e)"
-        ondragover="handleDragOver(e)"
-      ></div>
-      <div class="source_container">
-        <img
-          src="img/img.png"
-          id="dropedImg"
-          ondragstart="handleDragStart(e)"
-          draggable="true"
-          alt=""
-        />
-      </div>
-    </div>
-    <!-- <script src="./js基础/循环.js"></script> -->
-    <!-- <script src="./手写/listToTree.js"></script> -->
-    <!-- <script src="./手写/异步任务并发控制.js"></script> -->
-    <!-- <script src="./手写/objectMerge.js"></script> -->
-    <script src="./函数式编程/面向切面编程.js"></script>
-
-    <!-- <script src="./手写/recuseTree.js"></script> -->
-    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/qs/6.10.1/qs.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.21/lodash.js"></script>
-    <script src="./test.js"></script>
-    <script type="template">
-      function baseIsEqual(value, other, bitmask, customizer, stack) {
-        if (value === other) {
-          return true;
-        }
-        if (
-          value == null ||
-          other == null ||
-          (!isObjectLike(value) && !isObjectLike(other))
-        ) {
-          return value !== value && other !== other;
-        }
-        return baseIsEqualDeep(
-          value,
-          other,
-          bitmask,
-          customizer,
-          baseIsEqual,
-          stack
-        );
-      }
-      // equalFunc 指的是 baseIsEqual 本身
-      function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
-        var objIsArr = isArray(object),
-            othIsArr = isArray(other),
-            objTag = objIsArr ? arrayTag : getTag(object),
-            othTag = othIsArr ? arrayTag : getTag(other);
-
-        objTag = objTag == argsTag ? objectTag : objTag;
-        othTag = othTag == argsTag ? objectTag : othTag;
-
-        var objIsObj = objTag == objectTag,
-            othIsObj = othTag == objectTag,
-            isSameTag = objTag == othTag;
-
-        if (isSameTag && isBuffer(object)) {
-          if (!isBuffer(other)) {
-            return false;
-          }
-          objIsArr = true;
-          objIsObj = false;
-        }
-        if (isSameTag && !objIsObj) {
-          stack || (stack = new Stack);
-          return (objIsArr || isTypedArray(object))
-            ? equalArrays(object, other, bitmask, customizer, equalFunc, stack)
-            : equalByTag(object, other, objTag, bitmask, customizer, equalFunc, stack);
-        }
-        if (!(bitmask & COMPARE_PARTIAL_FLAG)) {
-          var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
-              othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
-
-          if (objIsWrapped || othIsWrapped) {
-            var objUnwrapped = objIsWrapped ? object.value() : object,
-                othUnwrapped = othIsWrapped ? other.value() : other;
-
-            stack || (stack = new Stack);
-            return equalFunc(objUnwrapped, othUnwrapped, bitmask, customizer, stack);
-          }
-        }
-        if (!isSameTag) {
-          return false;
-        }
-        stack || (stack = new Stack);
-        return equalObjects(object, other, bitmask, customizer, equalFunc, stack);
-      }
-
-      function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
-        var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
-            objProps = getAllKeys(object),
-            objLength = objProps.length,
-            othProps = getAllKeys(other),
-            othLength = othProps.length;
-
-        if (objLength != othLength && !isPartial) {
-          return false;
-        }
-        var index = objLength;
-        while (index--) {
-          var key = objProps[index];
-          if (!(isPartial ? key in other : hasOwnProperty.call(other, key))) {
-            return false;
-          }
-        }
-        // Check that cyclic values are equal.
-        var objStacked = stack.get(object);
-        var othStacked = stack.get(other);
-        if (objStacked && othStacked) {
-          return objStacked == other && othStacked == object;
-        }
-        var result = true;
-        stack.set(object, other);
-        stack.set(other, object);
-
-        var skipCtor = isPartial;
-        while (++index < objLength) {
-          key = objProps[index];
-          var objValue = object[key],
-              othValue = other[key];
-
-          if (customizer) {
-            var compared = isPartial
-              ? customizer(othValue, objValue, key, other, object, stack)
-              : customizer(objValue, othValue, key, object, other, stack);
-          }
-          // Recursively compare objects (susceptible to call stack limits).
-          if (!(compared === undefined
-                ? (objValue === othValue || equalFunc(objValue, othValue, bitmask, customizer, stack))
-                : compared
-              )) {
-            result = false;
-            break;
-          }
-          skipCtor || (skipCtor = key == 'constructor');
-        }
-        if (result && !skipCtor) {
-          var objCtor = object.constructor,
-              othCtor = other.constructor;
-
-          // Non `Object` object instances with different constructors are not equal.
-          if (objCtor != othCtor &&
-              ('constructor' in object && 'constructor' in other) &&
-              !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
-                typeof othCtor == 'function' && othCtor instanceof othCtor)) {
-            result = false;
-          }
-        }
-        stack['delete'](object);
-        stack['delete'](other);
-        return result;
-      }
+      <!-- <div>
+        <div v-if="show"></div>
+        <div v-show="showDiv">show div</div>
+      </div> -->
+      <!-- <div v-for="(item, index) in nums">hello ! {{item}}</div> -->
+    </template>
+    <script type="module"></script>
+    <script>
+      const app = new Vue({
+        template: "#vueTemplate",
+        el: "#app",
+        data() {
+          return {
+            nums: [1, 3, 5, 6],
+            show: false,
+            showDiv: true,
+          };
+        },
+        mounted() {
+          console.log(this.$options);
+        },
+        methods: {
+          handClick(e) {
+            console.log(e);
+          },
+        },
+      });
+      console.log(app, "----");
     </script>
-    <script src="./手写/bind.js"></script>
-    <script src="./lib/my-axios/cancelRepeat.js"></script> -->
-    <!-- <script src="./算法/三数之和.js"></script> -->
-    <!-- <script src="./手写/求在数组中找出最接近给定值的元素.js"></script> -->
   </body>
 </html>
