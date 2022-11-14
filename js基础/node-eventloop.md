@@ -121,3 +121,46 @@ Macir task queue / nextTick queue  if there are any callbacks in one of these tw
 
 
 and the tick is basically one cycle  in this event  loop 
+
+#### timer
+
+-  定时器的回调将在指定的时间过后,尽可能早的运行;但是操作系统 可能会延迟它们
+- Poll phase 控制者定时器何时执行
+
+### timer 与其他异步事件的区别
+
+- timer是等到时间后,才回去执行回调函数
+- 类似于fs等,都是只要当前的异步操作有结果,就回去执行回调函数
+
+#### `setImmediate()` vs `setTimeout()`
+
+- setImmediate 被设计去执行一些当轮训阶段完成后的任务
+- setTimeout 当事件到达后采取执行回调函数
+- timer的执行顺序收到调用它们的上下文 ,假如都是在主模块中被调用, timer将受到进程性能的影响.
+
+#### pending callbacks
+
+- 执行系统错误的回调
+
+#### Poll
+
+- 轮训阶段会有两种主要的函数
+  -  计算阻塞的时间 和 io 的轮训
+  - 处理轮训队列的事件
+- 当事件循环进入到轮训阶段, 没有timer被调度时, 会发生两件事
+  -  轮训队列非空,事件循环迭代 Poll的回调队列,同步执行每一项任务直到poll的队列已经被执行完,或者达到系统上线.
+  - poll queue isempty 
+    - Script  scheduled by setImmediate();  event loop 结束poll阶段的轮训,检查下一阶段执行被调度的脚本. 既执行被setImmediate调度的脚本.
+    - 没有script 被setImmediate 调度; 事件循环等待被加入到队列中的回调函数,立即执行它们.
+
+​		**一旦poll阶段的队列是空的,事件循环回去检查已经到时间的timer, 当timer的时间到期后, 事件循环就返回timer阶段去执行timer的回调函数.**
+
+#### check
+
+- 当poll阶段被执行完成后, 这个阶段的回调函数会立即执行.
+- 如果轮询阶段变为空闲并且脚本已使用 setImmediate() 排队，则事件循环可能会继续到检查阶段而不是等待。
+- setImmediate() 实际上是一个特殊的计时器，它在事件循环的单独阶段运行。(它使用一个 libuv API 来安排在轮询阶段完成后执行的回调)。
+
+#### close callbacks
+
+- the `'close'` event will be emitted in this phase. 
