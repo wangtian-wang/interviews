@@ -109,7 +109,7 @@
 
   - ##### 原理	利用js的作用域来实现css隔离
 
-  - ##### 写法
+  - ##### 写法 : 类似于jsx的写法
 
     ```js
     import styled from 'styled-components';
@@ -128,5 +128,69 @@
     }
     ```
 
-    
+  - 优点
+
+    - css的局部作用域, 不会和其他模块的css冲突
+
+    - 托管
+
+      > 托管: 将所有与单个组件相关的东西放在同一个地方
+
+    - 可以在样式中使用js变量
+
+      ```jsx
+      // colors.ts
+      export const colors = {
+        primary: '#0d6efd',
+        border: '#ddd',
+        /* ... */
+      };
+      
+      // MyComponent.tsx
+      function MyComponent({ fontSize }) {
+        return (
+          <p
+            css={{
+              color: colors.primary,
+              fontSize,
+              border: `1px solid ${colors.border}`,
+            }}
+          >
+            ...
+          </p>
+        );
+      }
+      ```
+
+      
+
+  - 缺点
+
+    - 增加了运行时的开销.  当组件渲染时,css-in-js必须将样式 	`序列化` 为可以插入到文档中的css ,这需要占用额外的cpu周期.
+
+      > 样式序列化: 将css字符串或者对象样式 转化为可以插入文档的普通css字符串的过程. 找序列化的过程中,会生成一个普通CSS的哈希值.比如 `css-15n1234rl`
+      >
+      > 重复的序列化 会有很高的性能代价.
+
+    - 增加包的体积
+
+    - 干扰调试工具的工作
+
+  ### 优化
+
+  - 将运行时,改为编译时.
+
+  - 相关的库
+
+    - Compiled
+
+    - Vanilla Extract
+
+    - Linaria
+
+      但是这些库,任然存在缺点.
+
+  > 
+
+   
 
