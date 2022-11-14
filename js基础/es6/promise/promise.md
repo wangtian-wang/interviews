@@ -115,6 +115,11 @@ function request() {
       }, 2000);
 ```
 
+## Promise.resolve(value)
+
+- 当 value 是普通值得时候,会被包装为 promise
+- 当 value 是 promise 的时候,会直接返回
+
 ## 失败的 promise.reject()
 
 ```js
