@@ -63,6 +63,9 @@ class Promise {
   }
   static all(promiseArray) {
     return new Promise((resolve, reject) => {
+      if (!Array.isArray(promiseArray))
+        return reject(new Error(`${promiseArray} must be an array!`));
+      if (!promiseArray.length) return resolve([]);
       let allResult = [],
         count = 0;
       // 遍历每一个promise，用then方法里面的回调，来判断当前的promise的状态是否为成功的
