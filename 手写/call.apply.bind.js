@@ -11,6 +11,7 @@ const obj = {
   name: "obj",
 };
 function print(...words) {
+  console.log(this, "this in print");
   console.log(this.name, ...words, "-----");
 }
 //test;
@@ -36,14 +37,16 @@ Function.prototype._bind = function () {
   var fn = this,
     _this = arguments[0],
     params = Array.prototype.slice.call(arguments, 1);
-  function o() {}
+  function o() {} // 为了在bound函数内部判断 bind是否被new 了, 好让this指向失效.
   function bound() {
     let argus = params.concat(Array.prototype.slice.call(arguments, 0));
     if (this instanceof o) {
       console.log("this in bound", this);
-      // bind可以被 new   将this绑定到当前new bound实例上面
+      // bind可以被 new   将this绑定到 fn上面 ;因为new 后 ,this会失效
       return fn.apply(this, argus);
     }
+
+    console.log(_this, "----- this---");
     return fn.apply(_this, argus);
   }
   o.prototype = fn.prototype;
@@ -53,8 +56,8 @@ Function.prototype._bind = function () {
 
 let res = print._bind(obj, 1, 2);
 let p = new res("a"); // res 实例化的对象 原型链上面没有name 属性
-let p1 = res("a");
-console.log(p);
+// let p1 = res("a");
+console.log(p, "p result");
 // soft bind
 
 /**
