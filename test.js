@@ -29,7 +29,31 @@ const menuOriginal = [
   { id: 5, name: "上架国家", parentId: 4 },
   { id: 7, name: "退货地址", parentId: 4 },
 ];
+function convertTree(list) {
+  list = [...list];
+
+  const res = [];
+  const map = list.reduce((prev, cur) => {
+    prev[cur.id] = cur;
+    return prev;
+  }, {});
+  for (const item of list) {
+    if (!item.parentId) {
+      res.push(item);
+      continue;
+    }
+
+    if (item.parentId in map) {
+      const parent = map[item.parentId];
+      parent.child = parent.child || [];
+      parent.child.push(item);
+    }
+  }
+  return res;
+}
+console.log(convertTree(menuOriginal));
 function formatData(data = []) {
+  data = [...data];
   const parentArray = data.filter((p) => p.parentId === undefined);
   const children = data.filter((c) => c.parentId !== undefined);
   function handleTree(parent, children) {
@@ -47,8 +71,8 @@ function formatData(data = []) {
   handleTree(parentArray, children);
   return parentArray;
 }
-// let res = formatData(menuOriginal);
-// console.log(res);
+
+// console.log(formatData(menuOriginal));
 
 // let url = "https://bytedance.com/?name=info&select=1,3,7#second-section";
 
@@ -141,4 +165,4 @@ function formatTree(array) {
   recuseFormat(parent, children);
   return parent;
 }
-console.log(formatTree(menuOriginal));
+// console.log(formatTree(menuOriginal));
