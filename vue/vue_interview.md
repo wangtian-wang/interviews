@@ -6,6 +6,16 @@
 3. setup 中为啥没有 beforeCreate 和 created?
    1. setup 的调用发生在组件 mounted 之前
 
+### new Vue () 的作用
+
+- 合并配置
+- 初始化生命周期和事件
+- 调用 `render`函数
+- 调用`beforeCreate`函数
+- 初始化`state`
+- 调用 `created`
+- 调用 `vm.$mount`,挂载渲染
+
 ### vue 实例挂载过程中发生了什么?
 
 1. 初始化 mountComponent
@@ -323,7 +333,7 @@ createRouter.install = function(app){
 ## vue 中 key 的作用是啥?
 
 - 1. 为了高效的更新虚拟 DOM
-     > 在 vue 的 diff 算法中,使用 key 和节点类型来比较两个节点是否相同,如果不设置 key,vue 使用的算法是 , 减少 DOM 的移动, 尽可能多的原地 patch 或者 reuse 相同 type 的 dom, 有 key 的话, 根据 key 的 变化 ,对于 DOM 重新排序,移除那些之前有 key,更新后没有 key 的元素.
+     > 在 vue 的 diff 算法中,使用 key 和节点类型来比较两个节点是否相同,如果不设置 key,vue 使用的算法是 , 减少 DOM 的移动, 尽可能多的原地 patch 或者 reuse 相同 type 的 dom, 有 key 的话, 根据 key 找到新节点在旧节点中的位置 ,对于 DOM 重新排序,移除那些之前有 key,更新后没有 key 的元素.
 - 2. 在实际开发中应该避免使用数组索引作为 key,会导致一些渲染问题
 - 3. 使用相同标签元素过渡切换时,也会使用 key,为了让 vue 可以区分他们,否则 vue 只会替换内部属性,不会触发过渡效果.
 - 4. 触发组件的生命周期在恰当的时候
@@ -355,6 +365,26 @@ createRouter.install = function(app){
   1. created 中想要获取 DOM 时
   1. 响应式数据变化后获取 DOM 更新后的状态，比如希望获取列表更新后的高度
 
+## `keep-alive`
+
+#### 作用
+
+- 缓存被`keep-alive`包裹的路由,从而提高渲染性能(减少 diff 虚拟 dom 的创建)
+
+#### 缓存原理 (缓存管理 LRU 算法)
+
+- 1: activate 将组件从原容器 搬运到另外一个隐藏的容器中 实现 假卸载
+- 2: deactivated 将组件从隐藏容器里面拿出来
+
+###### LRU 算法
+
+- 维护一个队列, 将最新访问的路由 和 之前已经访问过再次访问的路由 插入到尾部, 当达到最大限制时,将头部的数据丢弃.
+
+#### 渲染原理
+
+- `keep-alive`组件本身不会渲染额外的内容 它的 render 函数只返回需要被 keep-alive 包裹的组件(keep-alive 组件的 内部组件)
+- `keep-alive`组件会对内部组件做一些操作 添加一些标记属性,以便渲染器能够据此执行特定的逻辑
+
 ## watch/computed
 
 - 1. 使用场景
@@ -372,7 +402,7 @@ createRouter.install = function(app){
   - . 原理
     > computed 本质上是一个带有 `dirty:true; lazy:true `属性的 `watcher`, 默认 computed 传入的回调函数不执行,只有当属性在模板中使用后,执行 callback, 会将 dirty 标记为 false,将 callback 的执行结果缓存起来 ,当 computed 的依赖项没发生变化时 ,直接返回缓存结果.依赖项变化, dirty 标记为 false,访问时会执行 callback.
 
-2. #### 追问: watch 和 watchEffect 的区别??
+2. ## 追问: watch 和 watchEffect 的区别??
 
    1. #### 定义不同
 
@@ -558,16 +588,6 @@ provide = parent.provide? Parent.provide : object.create(null)
 >
 > includes ,indexOf 等方法调用的执行过程 : 先将代理对象转化为原始对象 调用原始对象的 includes 方法,原始对象上面假若找不到 就需要去代理对象上面查找
 
-#### new Vue
-
-> 初始化 事件 `$on` `$once`...
->
-> 初始化 状态 `$set` `$delete`...
->
-> 增加全局指令,过滤器,方法, mixin; 注册全局组件
->
-> 建立更新机制 ; 执行 render 方法
-
 #### vue 模板编译的原理
 
 > 1: 模板编译主要干了一件啥事情 ?
@@ -748,3 +768,45 @@ export default {
 
 - render 函数的参数是 `h`, 用来将整个 `template` 处理为 vnode.
 - h 既 `createElement()` 是一个生成 vnode 的实用程序. 可以创建单个的`vnode`
+
+#### dom diff 算法
+
+- 因为虚拟 DOM 都是树结构的数据,所以在 diff 的过程中,遵循树的遍历规则.(都只有一个根节点)
+- 广度优先
+- 深度优先
+- vue 中采用的是 深度优先遍历
+
+###### V2
+
+- 简单 DOM diff
+  - 定义一个 maxIndex = 0
+  - 新的 Vnode 在旧的 vnode 中寻找 是否有可复用的元素
+  - 若有可复用的元素, 找到这个元素在旧的 Vnode 的 index, 假设 index> maxIndex,则不需要移动,更新 maxIndex = index
+  - 在更新的过程中,新 vnode 的索引 小于 maxIndex,这说明需要移动该元素.之后再做 `patch` 可以减少 dom 移动的次数.
+- 双端 diff
+  - **同时**对新旧两组子节点的**两个端点**进行比较的算法
+  - 优势在于 在同样的更新场景, 执行 DOM 移动的操作次数更少
+  - 过程:
+    - 双端对比, 寻找 key 相同的 vnode,移动 , patch
+      - 旧的 vnode 的第一个元素和新的 vnode 的最后一个元素比较
+      - 旧的 vnode 的最后一个元素和新 vnode 的最后一个元素比较
+      - 旧的 vnode 的第一个元素和新的 vnode 的第一个元素比较
+      - 旧的 vnode 的最后一个元素和新 vnode 的第一个元素比较
+    - 若以上条件都不满足则需要,则遍历旧的一组子节点，寻找与 newStartVNode 拥有相同 key 值的元素
+      - 找到了可复用节点，进行 patch， 然后将该节点插入到 oldStartVNode 之前，newStartIdx 索引继续移动
+      - 未找到可复用节点，创建和挂载新节点
+    - 循环结束检查索引值情况，处理剩余节点，新增或删除节点
+
+###### v3
+
+- 快速 DOM diff 寻找最长上升子序列 (贪心 + 二分查找)
+- 运行过程
+  - 进行预处
+    - 通过找到前置节点 ˙ 和 后置节点中相同的,不需要移动的元素,找到没有处理的元素的区间.
+  - 构造一个 source 数组,初始化值为-1
+    - 存储 新子节点在旧子节点中存在的话, 将新子节点在旧子节点中的索引存储起来
+    - 为了优化双层循环带来的性能问题 , 构建了一张索引表,用来存储节点的 key 和节点位置索引之间的映射.
+  - 计算最长上升子序列 (储存的是元素的 Index)
+    - 最长上升子序列: 一个数值序列,找到它的一个子序列,并且子序列中的值是递增的,子序列中的元素不一定在原序列中连续.
+    - 最长上升子序列所指向的元素不需要移动.
+  - 移动 DOM
