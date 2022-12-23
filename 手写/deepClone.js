@@ -167,7 +167,7 @@ function deepClone2(obj, hash = new WeakMap()) {
   hash.set(obj, res);
   return res;
 }
-const rs = clone(testObj);
-console.log(rs, "as before");
-testObj.fn = function num() {};
-console.log(rs, "rs after");
+// const rs = clone(testObj);
+// console.log(rs, "as before");
+// testObj.fn = function num() {};
+// console.log(rs, "rs after");

@@ -66,3 +66,19 @@ console.log(22222);
 
 console.log(Function.__proto__ === Function.prototype);
 console.log(Object.__proto__ === Function.prototype);
+
+// 11 - 21 号面试  实现题目
+// add(1)(2)(3)()
+function add(arg) {
+  let res = arg;
+  function inner(args) {
+    if (!args) {
+      return res;
+    } else {
+      res += args;
+      return inner;
+    }
+  }
+  return inner;
+}
+console.log(add(1)(2)(3)());

@@ -76,8 +76,10 @@ const RUnique = (arr) => {
 // 方法三 ：  filter + indexOf   indexOf  / lastIndexOf 只能找出某个元素在数组第一次(最后一次)出现的索引
 
 const filterUnique = (arr) => {
-  return arr.filter((elem, index, arr) => {
-    return arr.indexOf(elem) === index;
+    return arr.filter((elem, index, arr) => {
+      return arr.lastIndexOf(elem) === index
+    // return arr.indexOf(elem) === index;
   });
 };
-console.log(filterUnique(repeatArr));
+// console.log(filterUnique(repeatArr));
+console.log(repeatArr.indexOf(1))

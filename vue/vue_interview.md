@@ -54,6 +54,15 @@
 
   以绑定一个响应式数据到视图，同时视图中变化能改变该值。
 
+- 用法:
+  - vue2, vue3 中都可以用于表单元素和自定义元素
+  - 但用于表单元素时, 默认向子组件传递的是 value 属性和 input 事件(checkbox radio 会使用原生的 change 事件实现)
+  - 当用于组件的时候,在 vue2 中可以使用 aync 修饰符,双向绑定一个变量,也可以使用组件的 model 属性 修改默认的 prop 和 event
+    vue3 中 默认触发的事件是 update:modelVal ,传递的属性时 modleVal ,开发者可以自行更改默认的事件和属性名称. 可以使用 v-model.modify 修饰符.
+- 区别:
+
+  - vue3 中 可以使用修饰符, 一个元素可以使用多个 v-model
+
 - 实现原理:
 
   `v-model`是语法糖，默认情况下相当于`:value `和`@input,是 vue 的编译器帮我们做了这些工作,不同的表单类型,绑定不同的事件
@@ -333,7 +342,7 @@ createRouter.install = function(app){
 ## vue 中 key 的作用是啥?
 
 - 1. 为了高效的更新虚拟 DOM
-     > 在 vue 的 diff 算法中,使用 key 和节点类型来比较两个节点是否相同,如果不设置 key,vue 使用的算法是 , 减少 DOM 的移动, 尽可能多的原地 patch 或者 reuse 相同 type 的 dom, 有 key 的话, 根据 key 找到新节点在旧节点中的位置 ,对于 DOM 重新排序,移除那些之前有 key,更新后没有 key 的元素.
+     > 在 vue 的 diff 算法中,使用 key 和节点类型来比较两个节点是否相同,如果不设置 key,vue 使用的算法是 , 减少 DOM 的移动, 尽可能多的原地 patch 或者 reuse 相同 type 的 dom, 有 key 的话, 根据 key 找到新节点在旧节点中的**位置** ,对于 DOM 重新排序,移除那些之前有 key,更新后没有 key 的元素.
 - 2. 在实际开发中应该避免使用数组索引作为 key,会导致一些渲染问题
 - 3. 使用相同标签元素过渡切换时,也会使用 key,为了让 vue 可以区分他们,否则 vue 只会替换内部属性,不会触发过渡效果.
 - 4. 触发组件的生命周期在恰当的时候
@@ -584,7 +593,7 @@ provide = parent.provide? Parent.provide : object.create(null)
 
 #### vue3 重写数组方法的原因
 
-> 数组的 push pop shift unshift splice ....等方法 会改变数组的长度 数组的长度 length 属性发生变化,会调用 proxy 的 set 方法,
+> 数组的 push pop shift unshift splice ....等方法 会改变数组的长度,数组中新增加的元素需要变为响应式 数组的长度 length 属性发生变化,会调用 proxy 的 set 方法,
 >
 > includes ,indexOf 等方法调用的执行过程 : 先将代理对象转化为原始对象 调用原始对象的 includes 方法,原始对象上面假若找不到 就需要去代理对象上面查找
 

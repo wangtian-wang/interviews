@@ -21,6 +21,7 @@ function bigNumPlus(num1, num2) {
   }
   return result.reverse().join("");
 }
-const num1 = "672345678912827";
-const num2 = "893718678927819";
-console.log(bigNumPlus(num1, num2));
+const num1 = "6723456789128279878916";
+const num2 = "8937186789278191235674";
+console.log(bigNumPlus(num1, num2)); //15660643578406471114590
+console.log(6723456789128279878916 + 8937186789278191235674); // 1.566064357840647e+22
