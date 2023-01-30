@@ -23,7 +23,7 @@
    2. 初始化组件实例
    3. 创建响应式数据
 2. 建立更新机制
-   1. 首次渲染执行 patch 函数,将 vnode 转换为真实 DOM;
+   1. 首次渲染执行 patch 函数,将 vnode **转换**为真实 DOM;
    2. 执行渲染函数,会创建**组件的响应式数据与组件更新函数**之间的关系
 
 ### vue-loader 的作用.
@@ -39,7 +39,7 @@
 1.  何为异步组件
 1.  在 vue3 中 使用 defineAsyncComponent()函数,传入配置项(delay, timeout, loadingComponent,...),执行该函数就会得到一个异步组件
 1.  异步组件的使用场景
-1.  异步组件可以进行代码风格,减少当前文件的打包体积,假设当前的文件,是个重要的页面,内容多,代码分包会提交该页面的加载速度,提升页面性能;
+1.  异步组件可以进行代码分包,减少当前文件的打包体积,假设当前的文件,是个重要的页面,内容多,代码分包会提高该页面的加载速度,提升页面性能;
 1.  异步组件和懒加载的区别
 1.  import() 加载的组件,返回的是一个 promise,父文件中的子组件可以使用 import 加载, 但是 import 没有提供额外的配置项,比如对于 delay,timeout,自定义错误组件的支持,这些都需要用户自定义配置
 1.  defineAsyncComponent()是 vue 框架层面做了封装,提供了开发者一个快捷的 API 去完成上述功能
@@ -119,7 +119,7 @@
 
 - 追问 : Vue.extend 与单文件组件的区别?
 
-  > 单文件组件,只能被用在父组件的 template 中, Vue.extend 创建的是组件构造器,可以 new 一个实例, 可以调用$mount()方法,挂载到页面指定的元素上,可以脱离 dom 层级的限制.
+  > 单文件组件,只能被用在父组件的 template 中, Vue.extend 创建的是**组件构造器**,可以 new 一个实例, 可以调用**_$mount()_**方法,挂载到页面指定的元素上,**可以脱离 dom 层级的限制**.
 
   > 像`element-ui` 中的 message, messageBox 等都采用的是 Vue.extend 的写法
 
@@ -408,6 +408,7 @@ createRouter.install = function(app){
 
   - . 简化行内模板中的复杂表达式
   - . 特点: 具有缓存性;懒执行;可以传递对象变为即可读,又可以写的属性
+  - . computed 的依赖项必须是 响应式数据
   - . 原理
     > computed 本质上是一个带有 `dirty:true; lazy:true `属性的 `watcher`, 默认 computed 传入的回调函数不执行,只有当属性在模板中使用后,执行 callback, 会将 dirty 标记为 false,将 callback 的执行结果缓存起来 ,当 computed 的依赖项没发生变化时 ,直接返回缓存结果.依赖项变化, dirty 标记为 false,访问时会执行 callback.
 
@@ -462,7 +463,15 @@ createRouter.install = function(app){
 
 - 在 vue2 中
 
-  > `patch`方法在遍历的时候从根节点开始遍历，它要求只有一个根节点。组件会转换为一个 `vdom`，所以 `vdom`是一颗单根树形结构.
+  > new vue()中需要一个 el，来作为整个 app 的根节点，将所有的组件挂载上去。
+  > 一个单文件组件 就是一个 vue 实例， 一个最外层的 div 会被确定组件的入口，作为组件的根节点，生成一个数状的 vdom.
+  > template 的特点 会出现在 dom 结构中 但是不会显示在页面上 里面的元素被 document-fragment 包裹。
+
+  ```js
+  `patch`方法在遍历的时候从根节点开始遍历，它要求只有一个根节点。组件会转换为一个 `vdom`，所以 `vdom`是一颗单根树形结构.
+  ```
+
+  >
 
 - 在 vue3 中
 
@@ -518,12 +527,17 @@ createRouter.install = function(app){
 > 2: 在 proxy 的 get 里面 ,触发 track
 >
 > 3: track 里面当前的 active effect :会收集对应的属性 属性也会对 effect 收集
->
+
+    ```js
+      effect 与 key 的对应关系 weekmap [key(obj): value(key(map(set)))]
+      双向收集
+    ```
+
 > 4: 当属性发生变化的时候 会找到对应的 effect 函数去执行
 
 #### vue3 中被 readonly 代理过的对象,再使用 reactive 代理时,会被直接返回
 
-#### vue3 模板优化策略 ----- 靶向更新
+#### vue3 模板编译优化策略 ----- 靶向更新
 
 > ```js
 > 1: patchFlag 标识节点静态,动态属性
@@ -535,7 +549,7 @@ createRouter.install = function(app){
 >  响应式数据变化 ->更新dynamicChild
 > ```
 
-#### 对于靶向更新的优化 ---- 静态提升
+#### vue3 模板编译优化策略 ----- 静态提升
 
 > 静态的节点和属性会被缓存起来 避免反复创建造成的性能消耗
 >
@@ -553,7 +567,7 @@ createRouter.install = function(app){
 >
 > 获取当前实例的 provides 或者 app.context 的 provides(假设当前组件是跟组件)
 
-```javascript
+```js
 object.create()等,定义了原型链的查找方向
 
 parent son: grandson
@@ -593,9 +607,13 @@ provide = parent.provide? Parent.provide : object.create(null)
 
 #### vue3 重写数组方法的原因
 
-> 数组的 push pop shift unshift splice ....等方法 会改变数组的长度,数组中新增加的元素需要变为响应式 数组的长度 length 属性发生变化,会调用 proxy 的 set 方法,
+> 数组的 push pop shift unshift splice ....等方法 会改变源数组的长度,需要正确的建立响应式联系或者触发响应
+> 数组中新增加的元素需要变为响应式
+> 当使用索引设置数组元素时，当索引大于数组的 length 时， 也会隐式的修改数组长度，也应该正确的触发响应。
 >
 > includes ,indexOf 等方法调用的执行过程 : 先将代理对象转化为原始对象 调用原始对象的 includes 方法,原始对象上面假若找不到 就需要去代理对象上面查找
+> proxy 能对对象的存在的和未存在的属性进行监听
+> 数组调用 push 等方法后 数组长度会发生变化 新增加的元素需要变为响应式元素 数组依赖需要变化。
 
 #### vue 模板编译的原理
 
@@ -617,6 +635,17 @@ provide = parent.provide? Parent.provide : object.create(null)
 
 ### vite 或者 webpack 中 alias 的原理是啥?
 
+> 本质上是对路径做了一个替换
+
+````js
+{
+    alias: {
+        '@': path.resolve(__dirname,'/src')
+    }
+}
+@ = /User/xxx/xxx/project/my-vite/src
+import XX from '@/components/xx.vue' 会被替换为/User/xxx/xxx/project/my-vite/src/components/xx.vue
+
 #### v-show 的实现原理
 
 - v-show 在 v2 v3 中的实现方式是一样的
@@ -634,7 +663,7 @@ var show = {
  extend(Vue.options.directives, platformDirectives);
   // 将v-show注册为全局指令 挂在  Vue.options.directives = { v-model,v-show}上面
 
-```
+````
 
 #### v-if 的实现原理
 
@@ -776,7 +805,41 @@ export default {
 #### `render` `h`
 
 - render 函数的参数是 `h`, 用来将整个 `template` 处理为 vnode.
-- h 既 `createElement()` 是一个生成 vnode 的实用程序. 可以创建单个的`vnode`
+- h 既 `createElement()` 是一个生成 vnode 的实用程序. 可以创建单个的`vnode` h 函数的参数可以是一个组件
+
+```js
+// app.vue
+<script setup>
+import { ref,h ,render} from 'vue'
+import Compo from './Comp.vue'
+const msg = ref('Hello World!')
+const arr = ref([]);
+  arr.value.push({name: 'peter'})
+  const Vnode = h(Compo, {}, 'HAHHAH');
+
+</script>
+
+<template>
+  <Compo/>
+  <Vnode/>
+</template>
+
+// Comp.vue
+<script setup>
+import { ref } from 'vue'
+
+const msg = ref('Hello World!')
+const arr = ref([]);
+  arr.value.push({name: 'peter'})
+</script>
+
+<template>
+  <div>
+    component
+    <slot></slot>
+  </div>
+</template>
+```
 
 #### dom diff 算法
 
